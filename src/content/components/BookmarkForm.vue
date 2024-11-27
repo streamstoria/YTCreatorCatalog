@@ -1,13 +1,13 @@
 <template>
   <div v-show="show" class="w-full bg-white border-t border-b border-gray-200 p-4">
-    <div class="max-w-4xl mx-auto">
+    <div class="max-w-4xl ">
       <div class="flex justify-between items-start mb-4">
-        <h3 class="text-lg font-medium">Add Bookmark</h3>
-        <button @click="close" class="text-gray-500 hover:text-gray-700">×</button>
+        <h3 class="text-lg text-slate-500 font-medium">Add Bookmark</h3>
+        <button @click="close" class="text-gray-500 hover:text-gray-700 text-3xl">&times;</button>
       </div>
 
       <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">Tags</label>
+        <label class="block text-2xl font-medium mb-2">Tags</label>
         <div class="flex flex-wrap gap-2 mb-2">
           <span 
             v-for="tag in tags" 
@@ -38,7 +38,7 @@
       </div>
 
       <div class="mb-4">
-        <label class="block text-sm font-medium mb-2">Notes</label>
+        <label class="block text-2xl font-medium mb-2">Notes</label>
         <textarea
           v-model="notes"
           class="w-full px-3 py-2 border rounded-lg"
