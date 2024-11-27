@@ -37,6 +37,7 @@ export function injectBookmarkComponents() {
   actionsContainer.parentNode.insertBefore(formWrapper, actionsContainer.nextSibling);
 
   let vueApp = null;
+
   buttonWrapper.querySelector('button').addEventListener('click', () => {
     console.log("Bookmark button clicked");
     
@@ -53,12 +54,16 @@ export function injectBookmarkComponents() {
       onClose: () => {
         console.log("vueApp onClose ...");
         
-        //const vm = vueApp._instance.proxy;
-        //vm.show = false;
+        if (vueApp) {
+          vueApp.unmount();
+          vueApp = null;
+          formWrapper.innerHTML = ''; // Clear the container
+        }
       }
     });
     
     console.log("Mounting Vue app");
     vueApp.mount('#yt-bookmark-form');
+    
   });
 }
