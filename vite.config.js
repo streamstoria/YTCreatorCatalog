@@ -28,5 +28,8 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'),
     },
+  },
+  optimizeDeps: {
+    include: ['vue']
   }
 });
