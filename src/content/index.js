@@ -1,27 +1,85 @@
+// src/content/index.js
 import { injectBookmarkComponents } from './components/bookmarkInjector';
 import { setupMessageHandlers } from './messageHandler';
-import '../assets/style.css'; // Make sure Tailwind is imported
+import '../assets/style.css';
+
+// Global initialization state
+const INIT_STATE = {
+  isInitialized: false,
+  attemptCount: 0,
+  maxAttempts: 10,
+  currentUrl: '',
+};
+
+function shouldInitialize(url) {
+  // Check if we're on a channel page
+  const isChannelPage = url.includes('/channel/') || 
+                       url.includes('/c/') || 
+                       url.includes('/user/');
+                       
+  // If not a channel page, reset initialization state
+  if (!isChannelPage) {
+    INIT_STATE.isInitialized = false;
+    INIT_STATE.currentUrl = '';
+    return false;
+  }
+
+  // If already initialized for this URL, skip
+  if (INIT_STATE.isInitialized && INIT_STATE.currentUrl === url) {
+    return false;
+  }
+
+  // Allow initialization for new channel URLs
+  return true;
+}
 
 function initialize() {
-  // Wait for the YouTube header to be fully loaded
-  const checkForHeader = setTimeout(() => {
-    const actionsContainer = document.querySelector('yt-flexible-actions-view-model');
-    if (actionsContainer) {
-      //clearInterval(checkForHeader);
-      console.log('Found actions container, injecting components...');
-      injectBookmarkComponents();
-    }
-  }, 2000);
+  // Clear any existing intervals
+  if (INIT_STATE.checkInterval) {
+    clearInterval(INIT_STATE.checkInterval);
+  }
 
-  // Clear interval after 10 seconds to prevent infinite checking
- // setTimeout(() => clearInterval(checkForHeader), 10000);
+  // Reset attempt count for new initialization
+  INIT_STATE.attemptCount = 0;
+  INIT_STATE.currentUrl = window.location.href;
+
+  // Check for the actions container
+  const checkForHeader = setInterval(() => {
+    INIT_STATE.attemptCount++;
+    console.log(`Initialization attempt ${INIT_STATE.attemptCount}`);
+
+    const actionsContainer = document.querySelector('yt-flexible-actions-view-model');
+    
+    if (actionsContainer) {
+      clearInterval(checkForHeader);
+      
+      // Check if bookmark button already exists
+      if (!document.getElementById('yt-bookmark-button')) {
+        console.log('Initializing bookmark components...');
+        injectBookmarkComponents();
+        INIT_STATE.isInitialized = true;
+      }
+      
+      return;
+    }
+
+    // Stop checking after max attempts
+    if (INIT_STATE.attemptCount >= INIT_STATE.maxAttempts) {
+      console.log('Max initialization attempts reached');
+      clearInterval(checkForHeader);
+    }
+  }, 1000);
+
+  // Store interval reference for cleanup
+  INIT_STATE.checkInterval = checkForHeader;
 }
 
 // Watch for navigation changes
 const observer = new MutationObserver((mutations) => {
-  if (window.location.href.includes('/channel/') || 
-      window.location.href.includes('/c/') || 
-      window.location.href.includes('/user/')) {
+  const currentUrl = window.location.href;
+  
+  // Only proceed if we should initialize for this URL
+  if (shouldInitialize(currentUrl)) {
     initialize();
   }
 });
@@ -36,11 +94,8 @@ observer.observe(document, {
 setupMessageHandlers();
 
 // Initial check
-if (window.location.href.includes('/channel/') || 
-    window.location.href.includes('/c/') || 
-    window.location.href.includes('/user/')) {
+if (shouldInitialize(window.location.href)) {
   initialize();
 }
 
-// Log for debugging
 console.log('Content script initialized');
