@@ -16,6 +16,11 @@ export default defineConfig({
         manage: resolve(__dirname, 'src/manage/index.html'),
         content: resolve(__dirname, 'src/content/index.js'),
         background: resolve(__dirname, 'src/background/index.js')
+      },
+      output: {
+        entryFileNames: `src/[name]/[name].js`,
+        chunkFileNames: `src/[name]/[name].js`,
+        assetFileNames: `src/[name]/[name].[ext]`
       }
     }
   },

@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "YouTube Channel Bookmarker",
+    "name": "YT Creator Catalog",
     "version": "1.0",
     "description": "Bookmark and organize YouTube channels with tags and notes",
     "permissions": [
@@ -24,6 +24,12 @@
             ]
         }
     ],
+    "web_accessible_resources": [
+    {
+      "resources": ["src/manage/*"],
+      "matches": ["<all_urls>"]
+    }
+  ],
     "background": {
         "service_worker": "src/background/index.js",
         "type": "module"

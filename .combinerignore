@@ -1,0 +1,8 @@
+trash
+.git
+.gitmodules
+.DS_Store
+src/dist
+node_modules
+dist
+pnpm-lock.yaml
