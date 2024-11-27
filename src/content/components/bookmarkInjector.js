@@ -51,9 +51,10 @@ export function injectBookmarkComponents() {
     vueApp = createApp(BookmarkForm, {
       show: true,
       onClose: () => {
+        console.log("vueApp onClose ...");
         
-        const vm = vueApp._instance.proxy;
-        vm.show = false;
+        //const vm = vueApp._instance.proxy;
+        //vm.show = false;
       }
     });
     

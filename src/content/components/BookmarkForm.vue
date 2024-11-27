@@ -92,6 +92,7 @@ const removeTag = (tag) => {
 const close = () => {
   tags.value.clear();
   notes.value = '';
+  console.log("close ...");
   props.onClose();
 };
 
