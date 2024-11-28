@@ -1,23 +1,22 @@
 <template>
   <div class="w-full bg-white border-t border-b border-gray-200 p-4">
     <div class="max-w-4xl">
-      <div class="flex justify-between items-start mb-4">
-        <h3 class="text-lg text-slate-500 font-medium">Manage Tags & Notes</h3>
+      <div class="flex justify-between items-start mb-6">
+        <h3 class="text-2xl font-semibold text-gray-800">Manage Tags & Notes</h3>
         <button @click="close" class="text-gray-500 hover:text-gray-700 text-3xl">&times;</button>
       </div>
       
-      <div class="mb-4">
-        <label class="block text-2xl font-medium mb-2">Tags</label>
-        <div class="flex flex-wrap gap-2 mb-2">
+      <div class="mb-6">
+      <div class="flex flex-wrap gap-2 mb-3">
           <span 
             v-for="tag in tags" 
             :key="tag"
-            class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm flex items-center gap-1"
+            class="bg-blue-100 text-blue-800 px-6 py-2 rounded-full flex items-center gap-1 text-2xl"
           >
             {{ tag }}
             <button 
               @click="removeTag(tag)" 
-              class="text-blue-600 hover:text-blue-800 ml-1"
+              class="text-blue-600 hover:text-blue-800 ml-1 text-2xl"
             >×</button>
           </span>
         </div>
@@ -26,23 +25,22 @@
             v-model="newTag"
             type="text"
             placeholder="Add a tag"
-            class="flex-1 px-3 py-2 border rounded-lg"
+            class="flex-1 px-4 py-3 border text-2xl rounded-lg"
           />
           <button
             type="submit"
-            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+            class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium text-2xl"
           >
-            Add
+            Add Tag
           </button>
         </form>
       </div>
       
-      <div class="mb-4">
-        <label class="block text-2xl font-medium mb-2">Notes</label>
-        <textarea
+      <div class="mb-6">
+       <textarea
           v-model="notes"
           @input="updateNotes"
-          class="w-full px-3 py-2 border rounded-lg"
+          class="w-full px-4 py-3 border rounded-lg text-2xl"
           rows="4"
           placeholder="Add notes about this channel..."
         ></textarea>
