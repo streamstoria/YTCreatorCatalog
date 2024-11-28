@@ -1,17 +1,15 @@
+import u from 'umbrellajs';
 import { createApp } from 'vue';
 import BookmarkForm from './BookmarkForm.vue';
 
 export function injectBookmarkComponents() {
-  const existingButton = document.getElementById('yt-bookmark-button');
-  const existingForm = document.getElementById('yt-bookmark-form');
-  if (existingButton) existingButton.remove();
-  if (existingForm) existingForm.remove();
+  const existingButton = u('#yt-bookmark-button');
+  const existingForm = u('#yt-bookmark-form');
+  if (existingButton.length) existingButton.remove();
+  if (existingForm.length) existingForm.remove();
 
-  const actionsContainer = document.querySelector('yt-flexible-actions-view-model');
-  if (!actionsContainer) {
-    console.warn('Actions container not found');
-    return;
-  }
+  const actionsContainer = u('yt-flexible-actions-view-model');
+  if (!actionsContainer.length) return;
 
   // Create button wrapper
   const buttonWrapper = document.createElement('div');
@@ -27,28 +25,35 @@ export function injectBookmarkComponents() {
   const formWrapper = document.createElement('div');
   formWrapper.id = 'yt-bookmark-form';
 
-  // Insert components
-  const lastAction = actionsContainer.lastElementChild;
+  const lastAction = actionsContainer.first().lastElementChild;
   if (lastAction) {
-    lastAction.after(buttonWrapper);
+    u(lastAction).after(buttonWrapper);
   } else {
-    actionsContainer.appendChild(buttonWrapper);
+    actionsContainer.append(buttonWrapper);
   }
-  actionsContainer.parentNode.insertBefore(formWrapper, actionsContainer.nextSibling);
+  actionsContainer.after(formWrapper);
 
   let vueApp = null;
+  u('#yt-bookmark-button button').on('click', async () => {
+    const moreButton = u('button.truncated-text-wiz__absolute-button');
+    if (moreButton.length) {
+      moreButton.trigger('click');
+      
+      // Wait for popup to open then find and click close button using more specific selector
+      setTimeout(() => {
+        const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
+        if (closeButton.length) {
+          closeButton.trigger('click');
+        }
+      }, 1000);
+    }
 
-  buttonWrapper.querySelector('button').addEventListener('click', () => {
-    console.log("Bookmark button clicked");
-    
     if (vueApp) {
-      console.log("Toggling form visibility");
       const vm = vueApp._instance.proxy;
       vm.show = !vm.show;
       return;
     }
 
-    console.log("Creating new Vue app");
     vueApp = createApp(BookmarkForm, {
       show: true,
       onClose: () => {
@@ -62,8 +67,6 @@ export function injectBookmarkComponents() {
       }
     });
     
-    console.log("Mounting Vue app");
     vueApp.mount('#yt-bookmark-form');
-    
   });
 }
