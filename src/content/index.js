@@ -2,6 +2,7 @@
 import { injectBookmarkComponents } from './components/bookmarkInjector';
 import { setupMessageHandlers } from './messageHandler';
 import '../assets/style.css';
+import { isYouTubeChannelPage } from './utils/pageUtils';
 
 // Global initialization state
 const INIT_STATE = {
@@ -12,11 +13,9 @@ const INIT_STATE = {
 };
 
 function shouldInitialize(url) {
-  // Check if we're on a channel page
-  const isChannelPage = url.includes('/channel/') || 
-                       url.includes('/c/') || 
-                       url.includes('/user/');
-                       
+  // Check if we're on a channel page using the shared function
+  const isChannelPage = isYouTubeChannelPage();
+                        
   // If not a channel page, reset initialization state
   if (!isChannelPage) {
     INIT_STATE.isInitialized = false;
