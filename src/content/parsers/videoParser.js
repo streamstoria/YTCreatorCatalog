@@ -65,14 +65,14 @@ function parseViewCount(viewCount) {
 }
 
 export function parseVideoList() {
-  const videos = [];
+  const videosMap = new Map(); // Use Map to track unique videos
   const maxVideos = 50;
   
   try {
     const videoElements = u('ytd-grid-video-renderer');
     
     videoElements.each((element, index) => {
-      if (index >= maxVideos) return;
+      if (videosMap.size >= maxVideos) return;
       
       try {
         const titleElement = u('#video-title', element);
@@ -82,6 +82,12 @@ export function parseVideoList() {
         const videoTitle = titleElement.first().textContent.trim();
         
         if (!videoUrl || !videoTitle) return;
+
+        // Clean up video URL by removing any timestamp parameters
+        const cleanUrl = videoUrl.split('&t=')[0];
+
+        // Skip if we already have this video
+        if (videosMap.has(cleanUrl)) return;
 
         const metadataSpans = element.querySelectorAll('#metadata-line span');
         let viewsText = '';
@@ -102,9 +108,9 @@ export function parseVideoList() {
         const viewCount = viewsText ? viewsText.split(' ')[0] : '0';
         const postedDate = parseRelativeDate(dateText);
 
-        videos.push({
+        videosMap.set(cleanUrl, {
           title: videoTitle,
-          url: `https://www.youtube.com${videoUrl}`,
+          url: `https://www.youtube.com${cleanUrl}`,
           views: parseViewCount(viewCount),
           postedDate: postedDate ? postedDate.toISOString() : null,
           metadata: {
@@ -119,8 +125,11 @@ export function parseVideoList() {
       }
     });
 
-    // Sort videos by view count in descending order
-    return videos.sort((a, b) => b.views - a.views);
+    // Convert Map to array and sort by views
+    const uniqueVideos = Array.from(videosMap.values())
+      .sort((a, b) => b.views - a.views);
+    
+    return uniqueVideos;
     
   } catch (error) {
     console.error('Error parsing video list:', error);
