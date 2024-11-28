@@ -1,6 +1,9 @@
 import u from 'umbrellajs';
 import { createApp } from 'vue';
 import BookmarkForm from './BookmarkForm.vue';
+import { parseChannelInfo } from '../parsers/channelParser';
+import { parseVideoList } from '../parsers/videoParser';
+import { waitForElement } from '../utils/pageUtils';
 
 export function injectBookmarkComponents() {
   const existingButton = u('#yt-bookmark-button');
@@ -34,39 +37,70 @@ export function injectBookmarkComponents() {
   actionsContainer.after(formWrapper);
 
   let vueApp = null;
+
+  const collectChannelData = async () => {
+    return new Promise((resolve) => {
+      // Wait for the about container to appear
+      waitForElement('#about-container', (aboutContainer) => {
+        // Give a small delay for content to populate
+        setTimeout(() => {
+          const channelInfo = parseChannelInfo();
+          const videos = parseVideoList();
+          
+          const channelData = {
+            ...channelInfo,
+            videos
+          };
+          
+          console.log('Collected Channel Data:', channelData);
+          resolve(channelData);
+        }, 500);
+      }, 20); // Increase max attempts since popup loading might take time
+    });
+  };
+
   u('#yt-bookmark-button button').on('click', async () => {
     const moreButton = u('button.truncated-text-wiz__absolute-button');
+    
     if (moreButton.length) {
+      // Click the more button to open about popup
       moreButton.trigger('click');
       
-      // Wait for popup to open then find and click close button using more specific selector
-      setTimeout(() => {
+      try {
+        // Wait for and collect channel data
+        const channelData = await collectChannelData();
+        
+        // Close the about popup after collecting data
         const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
         if (closeButton.length) {
           closeButton.trigger('click');
         }
-      }, 1000);
-    }
 
-    if (vueApp) {
-      const vm = vueApp._instance.proxy;
-      vm.show = !vm.show;
-      return;
-    }
-
-    vueApp = createApp(BookmarkForm, {
-      show: true,
-      onClose: () => {
-        console.log("vueApp onClose ...");
-        
+        // Handle Vue app display
         if (vueApp) {
-          vueApp.unmount();
-          vueApp = null;
-          formWrapper.innerHTML = ''; // Clear the container
+          const vm = vueApp._instance.proxy;
+          vm.show = !vm.show;
+          return;
         }
+
+        vueApp = createApp(BookmarkForm, {
+          show: true,
+          channelData, // Pass the collected data to the form
+          onClose: () => {
+            if (vueApp) {
+              vueApp.unmount();
+              vueApp = null;
+              formWrapper.innerHTML = '';
+            }
+          }
+        });
+        
+        vueApp.mount('#yt-bookmark-form');
+      } catch (error) {
+        console.error('Error collecting channel data:', error);
       }
-    });
-    
-    vueApp.mount('#yt-bookmark-form');
+    } else {
+      console.warn('More button not found');
+    }
   });
 }
