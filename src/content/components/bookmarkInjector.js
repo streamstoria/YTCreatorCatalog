@@ -1,3 +1,4 @@
+// src/content/components/bookmarkInjector.js
 import u from 'umbrellajs';
 import { createApp } from 'vue';
 import BookmarkForm from './BookmarkForm.vue';
@@ -5,6 +6,7 @@ import { parseChannelInfo } from '../parsers/channelParser';
 import { parseVideoList } from '../parsers/videoParser';
 import { waitForElement } from '../utils/pageUtils';
 import { parseChannelHomePage } from '../parsers/channelHomeParser';
+import { useStorage } from '../../store';
 
 export function injectBookmarkComponents() {
   const existingButton = u('#yt-bookmark-button');
@@ -38,9 +40,7 @@ export function injectBookmarkComponents() {
   actionsContainer.after(formWrapper);
 
   let vueApp = null;
-
   
-
   u('#yt-bookmark-button button').on('click', async () => {
     const moreButton = u('button.truncated-text-wiz__absolute-button');
     
@@ -49,10 +49,9 @@ export function injectBookmarkComponents() {
       moreButton.trigger('click');
       
       try {
-        
         // Wait for and collect channel data
         const channelInfo = await collectChannelData();
-
+        
         // Close the about popup after collecting data
         const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
         if (closeButton.length) {
@@ -62,17 +61,29 @@ export function injectBookmarkComponents() {
         const homePageData = parseChannelHomePage();
         const videos = parseVideoList();
 
+        // Ensure we have a valid channelId
+        if (!homePageData.channelId) {
+          console.error('Could not determine channelId');
+          return;
+        }
+
         const channelData = {
           ...channelInfo,
           ...homePageData,
-          videos
+          videos,
+          lastUpdated: new Date().toISOString()
         };
 
-        console.log('Collected Channel Data:', channelData);
+        // Immediately save the channel data
+        const { saveChannelData } = useStorage();
+        await saveChannelData(channelData);
 
+        console.log('Saved Channel Data:', channelData);
+
+        // Create the bookmark form for tags and notes
         vueApp = createApp(BookmarkForm, {
           show: true,
-          channelData, // Pass the collected data to the form
+          channelId: channelData.channelId, // Pass only the channelId
           onClose: () => {
             if (vueApp) {
               vueApp.unmount();
@@ -94,25 +105,11 @@ export function injectBookmarkComponents() {
 
 async function collectChannelData() {
   return new Promise((resolve) => {
-    // Wait for the about container to appear
     waitForElement('#about-container', (aboutContainer) => {
-      // Give a small delay for content to populate
       setTimeout(() => {
         const channelInfo = parseChannelInfo();
-        /*
-        const videos = parseVideoList();
-        
-        const channelData = {
-          ...channelInfo,
-          videos
-        };
-        
-        */
-        
-       // console.log('Collected Channel Data:', channelData);
         resolve(channelInfo);
       }, 500);
-    }, 20); // Increase max attempts since popup loading might take time
+    }, 20);
   });
-};
-
+}
