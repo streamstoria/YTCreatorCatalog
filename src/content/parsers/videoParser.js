@@ -105,7 +105,7 @@ export function parseVideoList() {
         videos.push({
           title: videoTitle,
           url: `https://www.youtube.com${videoUrl}`,
-          views: parseViewCount(viewCount), // Now directly storing the numeric value
+          views: parseViewCount(viewCount),
           postedDate: postedDate ? postedDate.toISOString() : null,
           metadata: {
             rawViews: viewsText,
@@ -118,8 +118,10 @@ export function parseVideoList() {
         console.warn('Error parsing video element:', elementError);
       }
     });
+
+    // Sort videos by view count in descending order
+    return videos.sort((a, b) => b.views - a.views);
     
-    return videos;
   } catch (error) {
     console.error('Error parsing video list:', error);
     return [];
