@@ -4,6 +4,7 @@ import BookmarkForm from './BookmarkForm.vue';
 import { parseChannelInfo } from '../parsers/channelParser';
 import { parseVideoList } from '../parsers/videoParser';
 import { waitForElement } from '../utils/pageUtils';
+import { parseChannelHomePage } from '../parsers/channelHomeParser';
 
 export function injectBookmarkComponents() {
   const existingButton = u('#yt-bookmark-button');
@@ -58,10 +59,12 @@ export function injectBookmarkComponents() {
           closeButton.trigger('click');
         }
 
+        const homePageData = parseChannelHomePage();
         const videos = parseVideoList();
 
         const channelData = {
           ...channelInfo,
+          ...homePageData,
           videos
         };
 

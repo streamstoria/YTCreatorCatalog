@@ -1,12 +1,33 @@
 import u from 'umbrellajs';
 
+// Helper function to parse numeric values with K, M, B suffixes
+function parseNumericValue(value) {
+  if (!value) return 0;
+  
+  // Remove any non-numeric characters except K, M, B and decimal points
+  const cleanValue = value.replace(/[^\d.KMB]/g, '');
+  
+  const multipliers = {
+    'K': 1000,
+    'M': 1000000,
+    'B': 1000000000
+  };
+
+  const match = cleanValue.match(/^([\d.]+)([KMB])?$/);
+  if (!match) return 0;
+  
+  const [, num, suffix] = match;
+  const baseValue = parseFloat(num);
+  return suffix ? baseValue * multipliers[suffix] : baseValue;
+}
+
 export function parseChannelInfo() {
   const channelInfo = {
     title: '',
     description: '',
-    subscriberCount: '',
-    videoCount: '',
-    viewCount: '',
+    subscriberCount: 0,
+    videoCount: 0,
+    viewCount: 0,
     joinDate: '',
     location: '',
     socialLinks: []
@@ -48,33 +69,33 @@ export function parseChannelInfo() {
       const content = u('td:last-child', row).text().trim();
       
       switch(iconType) {
-        case 'person_radar':
-          channelInfo.subscriberCount = content;
+        case 'person_radar': {
+          // Remove "subscribers" and parse the number
+          const cleanValue = content.replace(' subscribers', '');
+          channelInfo.subscriberCount = parseNumericValue(cleanValue);
           break;
-        case 'my_videos':
-          channelInfo.videoCount = content;
+        }
+        case 'my_videos': {
+          // Remove "videos" and parse the number
+          const cleanValue = content.replace(' videos', '');
+          channelInfo.videoCount = parseNumericValue(cleanValue);
           break;
-        case 'trending_up':
-          channelInfo.viewCount = content;
+        }
+        case 'trending_up': {
+          // Remove "views" and parse the number
+          const cleanValue = content.replace(' views', '');
+          channelInfo.viewCount = parseNumericValue(cleanValue);
           break;
+        }
         case 'info_outline':
-          channelInfo.joinDate = content;
+          // Remove "Joined " from joinDate
+          channelInfo.joinDate = content.replace('Joined ', '');
           break;
         case 'privacy_public':
           channelInfo.location = content;
           break;
       }
     });
-
-    // Clean up the data
-    // Remove "subscribers" from subscriberCount
-    channelInfo.subscriberCount = channelInfo.subscriberCount.replace(' subscribers', '');
-    // Remove "videos" from videoCount
-    channelInfo.videoCount = channelInfo.videoCount.replace(' videos', '');
-    // Remove "views" from viewCount
-    channelInfo.viewCount = channelInfo.viewCount.replace(' views', '');
-    // Remove "Joined " from joinDate
-    channelInfo.joinDate = channelInfo.joinDate.replace('Joined ', '');
 
     // Get channel title from page
     const titleElement = u('ytd-channel-name yt-formatted-string#text');
