@@ -22,7 +22,7 @@ export function injectBookmarkComponents() {
   buttonWrapper.className = 'yt-flexible-actions-view-model-wiz__action';
   buttonWrapper.id = 'yt-bookmark-button';
   buttonWrapper.innerHTML = `
-    <button class="yt-spec-button-shape-next yt-spec-button-shape-next--filled yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m">
+    <button class="yt-spec-button-shape-next yt-spec-button-shape-next--outline yt-spec-button-shape-next--mono yt-spec-button-shape-next--size-m">
       <div class="yt-spec-button-shape-next__button-text-content">Bookmark</div>
     </button>
   `;
