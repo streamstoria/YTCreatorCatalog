@@ -1,11 +1,11 @@
 <template>
-  <div v-show="show" class="w-full bg-white border-t border-b border-gray-200 p-4">
-    <div class="max-w-4xl ">
+  <div class="w-full bg-white border-t border-b border-gray-200 p-4">
+    <div class="max-w-4xl">
       <div class="flex justify-between items-start mb-4">
-        <h3 class="text-lg text-slate-500 font-medium">Add Bookmark</h3>
+        <h3 class="text-lg text-slate-500 font-medium">Manage Tags & Notes</h3>
         <button @click="close" class="text-gray-500 hover:text-gray-700 text-3xl">&times;</button>
       </div>
-
+      
       <div class="mb-4">
         <label class="block text-2xl font-medium mb-2">Tags</label>
         <div class="flex flex-wrap gap-2 mb-2">
@@ -36,79 +36,76 @@
           </button>
         </form>
       </div>
-
+      
       <div class="mb-4">
         <label class="block text-2xl font-medium mb-2">Notes</label>
         <textarea
           v-model="notes"
+          @input="updateNotes"
           class="w-full px-3 py-2 border rounded-lg"
           rows="4"
+          placeholder="Add notes about this channel..."
         ></textarea>
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <button
-          @click="close"
-          class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
-        >
-          Cancel
-        </button>
-        <button
-          @click="saveBookmark"
-          class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Save Bookmark
-        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useStorage } from '../../store';
 
 const props = defineProps({
-  show: Boolean,
+  channelId: {
+    type: String,
+    required: true
+  },
   onClose: Function
 });
 
-const tags = ref(new Set());
+const tags = ref([]);
 const newTag = ref('');
 const notes = ref('');
+const { getChannelById, addTagToChannel, removeTagFromChannel, updateChannelNotes } = useStorage();
 
-const addTag = () => {
+// Load existing data
+onMounted(async () => {
+  const channelData = await getChannelById(props.channelId);
+  if (channelData) {
+    tags.value = channelData.tags || [];
+    notes.value = channelData.notes || '';
+  }
+});
+
+const addTag = async () => {
   const tag = newTag.value.trim();
-  if (tag && !tags.value.has(tag)) {
-    tags.value.add(tag);
+  if (tag && !tags.value.includes(tag)) {
+    await addTagToChannel(props.channelId, tag);
+    tags.value.push(tag);
     newTag.value = '';
   }
 };
 
-const removeTag = (tag) => {
-  tags.value.delete(tag);
+const removeTag = async (tag) => {
+  await removeTagFromChannel(props.channelId, tag);
+  tags.value = tags.value.filter(t => t !== tag);
 };
+
+// Debounce function
+const debounce = (fn, delay) => {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+};
+
+// Debounced notes update
+const updateNotes = debounce(async () => {
+  await updateChannelNotes(props.channelId, notes.value);
+}, 500);
 
 const close = () => {
-  tags.value.clear();
-  notes.value = '';
-  console.log("close ...");
-  props.onClose();
-};
-
-const saveBookmark = async () => {
-  const response = await chrome.runtime.sendMessage({ action: 'getChannelInfo' });
-  
-  if (response) {
-    const { addBookmark } = useStorage();
-    await addBookmark({
-      ...response,
-      url: window.location.href,
-      tags: Array.from(tags.value),
-      notes: notes.value,
-      dateAdded: new Date().toISOString()
-    });
-    close();
-  }
+  props.onClose?.();
 };
 </script>

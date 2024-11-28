@@ -82,7 +82,6 @@ export function injectBookmarkComponents() {
 
         // Create the bookmark form for tags and notes
         vueApp = createApp(BookmarkForm, {
-          show: true,
           channelId: channelData.channelId, // Pass only the channelId
           onClose: () => {
             if (vueApp) {
