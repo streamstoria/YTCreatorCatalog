@@ -15,11 +15,8 @@ export function parseVideoList() {
       try {
         // Create new umbrella instances for each element
         const titleElement = u('#video-title', element);
-        const metadataSpans = u('#metadata-line span', element);
-
-        console.log("metadata-lines ", metadataSpans)
         
-        if (!titleElement.length || !metadataSpans.length) return;
+        if (!titleElement.length) return;
 
         // Get video URL and title
         const videoUrl = titleElement.first().getAttribute('href');
@@ -27,12 +24,12 @@ export function parseVideoList() {
         
         if (!videoUrl || !videoTitle) return;
 
-        // Get views and date from metadata spans
-        // Convert NodeList to Array to safely access elements
-        const spans = Array.from(metadataSpans);
-        console.log("spans ", spans);
-        const viewsText = spans[0]?.textContent?.trim() || '';
-        const dateText = spans[1]?.textContent?.trim() || '';
+        // Get metadata spans - these are direct DOM elements
+        const metadataSpans = element.querySelectorAll('#metadata-line span');
+        
+        // Extract views and date from spans
+        const viewsText = metadataSpans[0]?.textContent?.trim() || '';
+        const dateText = metadataSpans[1]?.textContent?.trim() || '';
 
         // Extract numeric view count
         const views = viewsText.split(' ')[0];
@@ -47,6 +44,14 @@ export function parseVideoList() {
             numericViews: parseViewCount(views)
           }
         });
+
+        // Debug log for verification
+        console.log('Parsed video:', {
+          title: videoTitle,
+          views: viewsText,
+          date: dateText
+        });
+        
       } catch (elementError) {
         console.warn('Error parsing video element:', elementError);
       }
