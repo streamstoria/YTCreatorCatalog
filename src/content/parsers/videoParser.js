@@ -1,6 +1,5 @@
 import u from 'umbrellajs';
 
-// Helper function to convert relative time to Date object
 function parseRelativeDate(relativeTime) {
   const now = new Date();
   const parts = relativeTime.toLowerCase().split(' ');
@@ -48,6 +47,23 @@ function parseRelativeDate(relativeTime) {
   return date;
 }
 
+function parseViewCount(viewCount) {
+  if (!viewCount || viewCount === '0') return 0;
+
+  const multipliers = {
+    'K': 1000,
+    'M': 1000000,
+    'B': 1000000000
+  };
+
+  const match = viewCount.match(/^([\d.]+)([KMB])?$/);
+  if (!match) return 0;
+
+  const [, num, suffix] = match;
+  const baseValue = parseFloat(num);
+  return suffix ? baseValue * multipliers[suffix] : baseValue;
+}
+
 export function parseVideoList() {
   const videos = [];
   const maxVideos = 50;
@@ -83,19 +99,18 @@ export function parseVideoList() {
           }
         }
 
-        const views = viewsText ? viewsText.split(' ')[0] : '0';
+        const viewCount = viewsText ? viewsText.split(' ')[0] : '0';
         const postedDate = parseRelativeDate(dateText);
 
         videos.push({
           title: videoTitle,
           url: `https://www.youtube.com${videoUrl}`,
-          views: views,
+          views: parseViewCount(viewCount), // Now directly storing the numeric value
           postedDate: postedDate ? postedDate.toISOString() : null,
           metadata: {
             rawViews: viewsText,
-            numericViews: parseViewCount(views),
-            isMembersOnly: metadataSpans.length === 1 && !viewsText,
             rawPostedDate: dateText,
+            isMembersOnly: metadataSpans.length === 1 && !viewsText,
           }
         });
         
@@ -109,21 +124,4 @@ export function parseVideoList() {
     console.error('Error parsing video list:', error);
     return [];
   }
-}
-
-function parseViewCount(viewCount) {
-  if (!viewCount || viewCount === '0') return 0;
-
-  const multipliers = {
-    'K': 1000,
-    'M': 1000000,
-    'B': 1000000000
-  };
-
-  const match = viewCount.match(/^([\d.]+)([KMB])?$/);
-  if (!match) return 0;
-
-  const [, num, suffix] = match;
-  const baseValue = parseFloat(num);
-  return suffix ? baseValue * multipliers[suffix] : baseValue;
 }
