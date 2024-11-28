@@ -38,26 +38,7 @@ export function injectBookmarkComponents() {
 
   let vueApp = null;
 
-  const collectChannelData = async () => {
-    return new Promise((resolve) => {
-      // Wait for the about container to appear
-      waitForElement('#about-container', (aboutContainer) => {
-        // Give a small delay for content to populate
-        setTimeout(() => {
-          const channelInfo = parseChannelInfo();
-          const videos = parseVideoList();
-          
-          const channelData = {
-            ...channelInfo,
-            videos
-          };
-          
-          console.log('Collected Channel Data:', channelData);
-          resolve(channelData);
-        }, 500);
-      }, 20); // Increase max attempts since popup loading might take time
-    });
-  };
+  
 
   u('#yt-bookmark-button button').on('click', async () => {
     const moreButton = u('button.truncated-text-wiz__absolute-button');
@@ -67,21 +48,24 @@ export function injectBookmarkComponents() {
       moreButton.trigger('click');
       
       try {
-        // Wait for and collect channel data
-        const channelData = await collectChannelData();
         
+        // Wait for and collect channel data
+        const channelInfo = await collectChannelData();
+
         // Close the about popup after collecting data
         const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
         if (closeButton.length) {
           closeButton.trigger('click');
         }
 
-        // Handle Vue app display
-        if (vueApp) {
-          const vm = vueApp._instance.proxy;
-          vm.show = !vm.show;
-          return;
-        }
+        const videos = parseVideoList();
+
+        const channelData = {
+          ...channelInfo,
+          videos
+        };
+
+        console.log('Collected Channel Data:', channelData);
 
         vueApp = createApp(BookmarkForm, {
           show: true,
@@ -104,3 +88,28 @@ export function injectBookmarkComponents() {
     }
   });
 }
+
+async function collectChannelData() {
+  return new Promise((resolve) => {
+    // Wait for the about container to appear
+    waitForElement('#about-container', (aboutContainer) => {
+      // Give a small delay for content to populate
+      setTimeout(() => {
+        const channelInfo = parseChannelInfo();
+        /*
+        const videos = parseVideoList();
+        
+        const channelData = {
+          ...channelInfo,
+          videos
+        };
+        
+        */
+        
+       // console.log('Collected Channel Data:', channelData);
+        resolve(channelInfo);
+      }, 500);
+    }, 20); // Increase max attempts since popup loading might take time
+  });
+};
+
