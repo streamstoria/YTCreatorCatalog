@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "umbrellajs": "^3.3.3",
-    "vue": "^3.3.8"
+    "vue": "^3.3.8",
+    "vue-router": "^4.2.5"
   },
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.0.0-beta.19",
