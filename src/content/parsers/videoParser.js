@@ -1,5 +1,53 @@
 import u from 'umbrellajs';
 
+// Helper function to convert relative time to Date object
+function parseRelativeDate(relativeTime) {
+  const now = new Date();
+  const parts = relativeTime.toLowerCase().split(' ');
+  
+  if (parts.length !== 2 && parts.length !== 3) return null;
+  
+  const amount = parseInt(parts[0]);
+  const unit = parts[1].replace('ago', '').trim();
+  
+  const date = new Date(now);
+  
+  switch (unit) {
+    case 'second':
+    case 'seconds':
+      date.setSeconds(date.getSeconds() - amount);
+      break;
+    case 'minute':
+    case 'minutes':
+      date.setMinutes(date.getMinutes() - amount);
+      break;
+    case 'hour':
+    case 'hours':
+      date.setHours(date.getHours() - amount);
+      break;
+    case 'day':
+    case 'days':
+      date.setDate(date.getDate() - amount);
+      break;
+    case 'week':
+    case 'weeks':
+      date.setDate(date.getDate() - (amount * 7));
+      break;
+    case 'month':
+    case 'months':
+      date.setMonth(date.getMonth() - amount);
+      break;
+    case 'year':
+    case 'years':
+      date.setFullYear(date.getFullYear() - amount);
+      break;
+    default:
+      return null;
+  }
+  
+  return date;
+}
+
 export function parseVideoList() {
   const videos = [];
   const maxVideos = 50;
@@ -23,15 +71,11 @@ export function parseVideoList() {
         let viewsText = '';
         let dateText = '';
 
-        // Handle different metadata formats
         if (metadataSpans.length === 2) {
-          // Regular video with both views and date
           viewsText = metadataSpans[0]?.textContent?.trim() || '';
           dateText = metadataSpans[1]?.textContent?.trim() || '';
         } else if (metadataSpans.length === 1) {
-          // Members-only video or special case with only date
           const text = metadataSpans[0]?.textContent?.trim() || '';
-          // Check if the text contains "views" to determine if it's views or date
           if (text.toLowerCase().includes('views')) {
             viewsText = text;
           } else {
@@ -39,18 +83,19 @@ export function parseVideoList() {
           }
         }
 
-        // Extract numeric view count only if we have views
         const views = viewsText ? viewsText.split(' ')[0] : '0';
+        const postedDate = parseRelativeDate(dateText);
 
         videos.push({
           title: videoTitle,
           url: `https://www.youtube.com${videoUrl}`,
           views: views,
-          postedDate: dateText,
+          postedDate: postedDate ? postedDate.toISOString() : null,
           metadata: {
             rawViews: viewsText,
             numericViews: parseViewCount(views),
             isMembersOnly: metadataSpans.length === 1 && !viewsText,
+            rawPostedDate: dateText,
           }
         });
         
