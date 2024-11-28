@@ -40,67 +40,64 @@ export function injectBookmarkComponents() {
   actionsContainer.after(formWrapper);
 
   let vueApp = null;
+  function closeBookmarkForm(){
+    vueApp.unmount();
+    vueApp = null;
+    formWrapper.innerHTML = '';
+  }
   
   u('#yt-bookmark-button button').on('click', async () => {
-    const moreButton = u('button.truncated-text-wiz__absolute-button');
-    
-    if (moreButton.length) {
-      // Click the more button to open about popup
-      moreButton.trigger('click');
-      
-      try {
-        // Wait for and collect channel data
-        const channelInfo = await collectChannelData();
-        
-        // Close the about popup after collecting data
-        const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
-        if (closeButton.length) {
-          closeButton.trigger('click');
-        }
-
-        const homePageData = parseChannelHomePage();
-        const videos = parseVideoList();
-
-        // Ensure we have a valid channelId
-        if (!homePageData.channelId) {
-          console.error('Could not determine channelId');
-          return;
-        }
-
-        const channelData = {
-          ...channelInfo,
-          ...homePageData,
-          videos,
-          lastUpdated: new Date().toISOString()
-        };
-
-        // Immediately save the channel data
-        const { saveChannelData } = useStorage();
-        await saveChannelData(channelData);
-
-        console.log('Saved Channel Data:', channelData);
-
-        // Create the bookmark form for tags and notes
-        vueApp = createApp(BookmarkForm, {
-          channelId: channelData.channelId, // Pass only the channelId
-          onClose: () => {
-            if (vueApp) {
-              vueApp.unmount();
-              vueApp = null;
-              formWrapper.innerHTML = '';
-            }
-          }
-        });
-        
-        vueApp.mount('#yt-bookmark-form');
-      } catch (error) {
-        console.error('Error collecting channel data:', error);
-      }
-    } else {
-      console.warn('More button not found');
+    if (vueApp) {
+      closeBookmarkForm();
+      return;
     }
+
+    const homePageData = parseChannelHomePage();
+    const { saveChannelData, getChannelById } = useStorage();
+
+    // Ensure we have a valid channelId
+    if (!homePageData.channelId) {
+      console.error('Could not determine channelId');
+      return;
+    }
+
+    const channel = await getChannelById(homePageData.channelId)
+
+    if(!channel){
+      let channelInfo = await collectChannelInfo();
+      
+      const videos = parseVideoList();
+      const channelData = {
+        ...channelInfo,
+        ...homePageData,
+        videos,
+        lastUpdated: new Date().toISOString()
+      };
+
+      await saveChannelData(channelData);
+
+      console.log('Saved Channel Data:', channelData);
+
+    }
+
+    // Create the bookmark form for tags and notes
+    vueApp = createApp(BookmarkForm, {
+      channelId: homePageData.channelId, // Pass only the channelId
+      onClose: () => {
+        if (vueApp) {
+          closeBookmarkForm();
+        }
+      }
+    });
+    
+    vueApp.mount('#yt-bookmark-form');
+      
   });
+
+  
 }
+
+
 
 async function collectChannelData() {
   return new Promise((resolve) => {
@@ -111,4 +108,28 @@ async function collectChannelData() {
       }, 500);
     }, 20);
   });
+}
+
+async function collectChannelInfo(){
+  let channelInfo = {}
+  const moreButton = u('button.truncated-text-wiz__absolute-button');
+
+  if (moreButton.length) {
+    // Click the more button to open about popup
+    moreButton.trigger('click');
+    
+    try {
+      // Wait for and collect channel data
+      channelInfo = await collectChannelData();
+      
+      // Close the about popup after collecting data
+      const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
+      if (closeButton.length) {
+        closeButton.trigger('click');
+      }
+    }catch(e){
+      console.error("Error collecting channel info ",e)
+    }
+  }  
+  return channelInfo;
 }
