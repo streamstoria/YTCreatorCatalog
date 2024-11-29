@@ -21,7 +21,6 @@ export const useStorage = () => {
       console.error('Cannot save channel: channelId is required');
       return null;
     }
-
     const channelsMap = await getChannelsMap();
     
     channelsMap[channelData.channelId] = {
@@ -30,9 +29,44 @@ export const useStorage = () => {
       notes: channelsMap[channelData.channelId]?.notes || '',
       lastUpdated: new Date().toISOString()
     };
-
     await chrome.storage.local.set({ channelsMap });
     return channelData.channelId;
+  };
+
+  // Remove channel
+  const removeChannel = async (channelId) => {
+    try {
+      // Get current channels
+      const currentChannels = await getChannelsMap();
+      
+      // Check if channel exists
+      if (!currentChannels[channelId]) {
+        throw new Error('Channel not found');
+      }
+      
+      // Create new object without the removed channel
+      const updatedChannels = Object.fromEntries(
+        Object.entries(currentChannels)
+          .filter(([id]) => id !== channelId)
+          .map(([id, channel]) => [
+            id,
+            {
+              ...channel,
+              // Ensure critical arrays are always arrays
+              videos: Array.isArray(channel.videos) ? channel.videos : [],
+              tags: Array.isArray(channel.tags) ? channel.tags : [],
+            }
+          ])
+      );
+      
+      // Update storage
+      await chrome.storage.local.set({ channelsMap: updatedChannels });
+      
+      return true;
+    } catch (error) {
+      console.error('Error removing channel:', error);
+      throw error;
+    }
   };
 
   // Add a tag to a channel
@@ -84,6 +118,7 @@ export const useStorage = () => {
     saveChannelData,
     addTagToChannel,
     removeTagFromChannel,
-    updateChannelNotes
+    updateChannelNotes,
+    removeChannel // Export the new function
   };
 };
