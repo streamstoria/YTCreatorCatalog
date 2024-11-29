@@ -55,6 +55,48 @@ export class ChannelsStore {
       throw error;
     }
   }
+
+
+  async getAllChannels() {
+    try {
+      const transaction = await dbConnection.getTransaction([STORES.CHANNELS]);
+      const store = transaction.objectStore(STORES.CHANNELS);
+
+      return new Promise((resolve, reject) => {
+        const request = store.getAll();
+        
+        request.onsuccess = () => {
+          resolve(request.result || []);
+        };
+        
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error('Error getting all channels:', error);
+      throw error;
+    }
+  }
+
+  async removeChannel(channelId) {
+    try {
+      const transaction = await dbConnection.getTransaction([STORES.CHANNELS], 'readwrite');
+      const store = transaction.objectStore(STORES.CHANNELS);
+
+      return new Promise((resolve, reject) => {
+        const request = store.delete(channelId);
+        
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+        
+        // Ensure transaction completes
+        transaction.oncomplete = () => resolve();
+        transaction.onerror = () => reject(transaction.error);
+      });
+    } catch (error) {
+      console.error('Error removing channel:', error);
+      throw error;
+    }
+  }
 }
 
 export const channelsStore = new ChannelsStore();

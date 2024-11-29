@@ -95,11 +95,53 @@ export const useStorage = () => {
     }
   };
 
+  const getChannelsMap = async () => {
+    try {
+      // Get all channels
+      const channels = await channelsStore.getAllChannels();
+      
+      // Get all tags for all channels in parallel
+      const channelsWithTags = await Promise.all(
+        channels.map(async channel => {
+          const tags = await tagsStore.getChannelTags(channel.channelId);
+          return {
+            ...channel,
+            tags
+          };
+        })
+      );
+
+      // Convert to map with channelId as key
+      return channelsWithTags.reduce((acc, channel) => {
+        acc[channel.channelId] = channel;
+        return acc;
+      }, {});
+    } catch (error) {
+      console.error('Error in getChannelsMap:', error);
+      throw error;
+    }
+  };
+
+  const removeChannel = async (channelId) => {
+    try {
+      // Start with removing tags
+      await tagsStore.removeAllChannelTags(channelId);
+      
+      // Then remove the channel
+      await channelsStore.removeChannel(channelId);
+    } catch (error) {
+      console.error('Error in removeChannel:', error);
+      throw error;
+    }
+  };
+
   return {
     saveChannelData,
     getChannelById,
     addTagToChannel,
     removeTagFromChannel,
-    updateChannelNotes
+    updateChannelNotes,
+    getChannelsMap,
+    removeChannel
   };
 };

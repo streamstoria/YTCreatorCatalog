@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { useStorage } from '../index';
 import { mockChannel, mockTags } from './utils';
+import { tagsStore } from '../tags';
 
 describe('Store Integration', () => {
   const store = useStorage();
@@ -211,5 +212,72 @@ describe('Store Integration', () => {
         store.updateChannelNotes('non-existent-id', 'some notes')
       ).rejects.toThrow('Channel not found');
     });
+  });
+});
+
+describe('Channel List Management', () => {
+  const store = useStorage();
+
+  it('should get all channels as a map', async () => {
+    // Save multiple channels
+    const channels = [
+      {
+        ...mockChannel,
+        channelId: 'channel1',
+        title: 'Channel 1',
+        tags: ['tag1', 'tag2']
+      },
+      {
+        ...mockChannel,
+        channelId: 'channel2',
+        title: 'Channel 2',
+        tags: ['tag2', 'tag3']
+      }
+    ];
+
+    await Promise.all(channels.map(channel => store.saveChannelData(channel)));
+
+    // Get channels map
+    const channelsMap = await store.getChannelsMap();
+
+    // Verify map structure
+    expect(Object.keys(channelsMap)).toHaveLength(2);
+    expect(channelsMap.channel1.title).toBe('Channel 1');
+    expect(channelsMap.channel2.title).toBe('Channel 2');
+
+    // Verify tags are included
+    expect(channelsMap.channel1.tags).toContain('tag1');
+    expect(channelsMap.channel2.tags).toContain('tag3');
+  });
+
+  it('should remove channel and its tags', async () => {
+    // Save a channel with tags
+    const channel = {
+      ...mockChannel,
+      channelId: 'channel-to-remove',
+      tags: ['tag1', 'tag2']
+    };
+    await store.saveChannelData(channel);
+
+    // Remove the channel
+    await store.removeChannel(channel.channelId);
+
+    // Verify channel is removed
+    const deletedChannel = await store.getChannelById(channel.channelId);
+    expect(deletedChannel).toBeNull();
+
+    // Verify no tags remain
+    const remainingTags = await tagsStore.getChannelTags(channel.channelId);
+    expect(remainingTags).toHaveLength(0);
+  });
+
+  it('should handle empty channel list', async () => {
+    const channelsMap = await store.getChannelsMap();
+    expect(channelsMap).toEqual({});
+  });
+
+  it('should handle removing non-existent channel', async () => {
+    // Should not throw error
+    await expect(store.removeChannel('non-existent-id')).resolves.not.toThrow();
   });
 });

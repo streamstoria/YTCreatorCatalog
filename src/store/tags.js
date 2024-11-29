@@ -85,6 +85,39 @@ export class TagsStore {
       request.onerror = () => reject(request.error);
     });
   }
+
+  async removeAllChannelTags(channelId) {
+    try {
+      const transaction = await dbConnection.getTransaction([STORES.TAGS], 'readwrite');
+      const store = transaction.objectStore(STORES.TAGS);
+      const channelIdIndex = store.index(INDEXES.TAGS.CHANNEL_ID);
+
+      return new Promise((resolve, reject) => {
+        const getRequest = channelIdIndex.getAll(channelId);
+        
+        getRequest.onsuccess = () => {
+          try {
+            // Delete all tags for this channel
+            getRequest.result.forEach(tag => {
+              store.delete(tag.id);
+            });
+
+            // Handle transaction completion
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        getRequest.onerror = () => reject(getRequest.error);
+      });
+    } catch (error) {
+      console.error('Error removing channel tags:', error);
+      throw error;
+    }
+  }
+  
 }
 
 export const tagsStore = new TagsStore();
