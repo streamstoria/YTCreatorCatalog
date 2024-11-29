@@ -36,20 +36,45 @@
         </div>
       </div>
 
-      <!-- Tags -->
+      <!-- Tags with Edit UI -->
       <div class="mb-6">
         <h2 class="text-lg font-semibold mb-2">Tags</h2>
-        <div class="flex flex-wrap gap-2">
-          <span 
-            v-for="tag in channel.tags" 
-            :key="tag"
-            class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-          >
-            {{ tag }}
-          </span>
-          <span v-if="!channel.tags?.length" class="text-gray-500">
-            No tags added
-          </span>
+        <div class="bg-gray-50 p-4 rounded">
+          <div class="mb-3">
+            <div class="flex items-center gap-2">
+              <!-- Existing tags -->
+              <div class="flex flex-wrap gap-1">
+                <span 
+                  v-for="tag in channel.tags" 
+                  :key="tag"
+                  class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
+                >
+                  {{ tag }}
+                  <button 
+                    @click="removeTag(tag)" 
+                    class="text-blue-600 hover:text-blue-800 ml-1"
+                    aria-label="Remove tag"
+                  >×</button>
+                </span>
+              </div>
+              
+              <!-- Tag input form -->
+              <form @submit.prevent="addTag" class="flex-1 flex gap-2">
+                <input
+                  v-model="newTag"
+                  type="text"
+                  placeholder="Add tags..."
+                  class="flex-1 px-2 py-1 border rounded text-sm"
+                />
+                <button
+                  type="submit"
+                  class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                >
+                  Add
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -108,7 +133,8 @@ const props = defineProps({
 });
 
 const channel = ref(null);
-const { getChannelById } = useStorage();
+const newTag = ref('');
+const { getChannelById, addTagToChannel, removeTagFromChannel } = useStorage();
 
 // Format helpers
 const formatNumber = (num) => {
@@ -119,6 +145,23 @@ const formatNumber = (num) => {
 const formatDate = (dateString) => {
   if (!dateString) return 'Unknown';
   return new Date(dateString).toLocaleDateString();
+};
+
+const addTag = async () => {
+  const tag = newTag.value.trim();
+  if (tag && !channel.value.tags?.includes(tag)) {
+    await addTagToChannel(props.id, tag);
+    // Update local state
+    if (!channel.value.tags) channel.value.tags = [];
+    channel.value.tags.push(tag);
+    newTag.value = '';
+  }
+};
+
+const removeTag = async (tagToRemove) => {
+  await removeTagFromChannel(props.id, tagToRemove);
+  // Update local state
+  channel.value.tags = channel.value.tags.filter(tag => tag !== tagToRemove);
 };
 
 // Load channel data
