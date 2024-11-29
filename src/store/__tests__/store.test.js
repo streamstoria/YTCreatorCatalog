@@ -121,4 +121,95 @@ describe('Store Integration', () => {
       expect(channel).toBeNull();
     });
   });
+
+  describe('Tag Management', () => {
+    it('should add a new tag to channel', async () => {
+      // First save a channel with initial tags
+      const channelWithTags = {
+        ...mockChannel,
+        tags: ['initial-tag']
+      };
+      await store.saveChannelData(channelWithTags);
+
+      // Add a new tag
+      const newTag = 'new-tag';
+      await store.addTagToChannel(mockChannel.channelId, newTag);
+
+      // Verify the tag was added
+      const updatedChannel = await store.getChannelById(mockChannel.channelId);
+      expect(updatedChannel.tags).toContain(newTag);
+      expect(updatedChannel.tags).toContain('initial-tag');
+    });
+
+    it('should not duplicate existing tags', async () => {
+      // Save channel with a tag
+      const initialTag = 'test-tag';
+      await store.saveChannelData({
+        ...mockChannel,
+        tags: [initialTag]
+      });
+
+      // Try to add the same tag again
+      await store.addTagToChannel(mockChannel.channelId, initialTag);
+
+      // Verify no duplication
+      const channel = await store.getChannelById(mockChannel.channelId);
+      expect(channel.tags.filter(tag => tag === initialTag)).toHaveLength(1);
+    });
+
+    it('should remove a tag from channel', async () => {
+      // Save channel with tags
+      const initialTags = ['tag1', 'tag2', 'tag3'];
+      await store.saveChannelData({
+        ...mockChannel,
+        tags: initialTags
+      });
+
+      // Remove one tag
+      await store.removeTagFromChannel(mockChannel.channelId, 'tag2');
+
+      // Verify the tag was removed
+      const updatedChannel = await store.getChannelById(mockChannel.channelId);
+      expect(updatedChannel.tags).not.toContain('tag2');
+      expect(updatedChannel.tags).toHaveLength(2);
+      expect(updatedChannel.tags).toContain('tag1');
+      expect(updatedChannel.tags).toContain('tag3');
+    });
+  });
+
+  describe('Notes Management', () => {
+    it('should update channel notes', async () => {
+      // Save initial channel
+      await store.saveChannelData(mockChannel);
+
+      // Update notes
+      const newNotes = 'These are updated notes';
+      await store.updateChannelNotes(mockChannel.channelId, newNotes);
+
+      // Verify notes were updated
+      const updatedChannel = await store.getChannelById(mockChannel.channelId);
+      expect(updatedChannel.notes).toBe(newNotes);
+    });
+
+    it('should handle empty notes', async () => {
+      // Save channel with notes
+      await store.saveChannelData({
+        ...mockChannel,
+        notes: 'Initial notes'
+      });
+
+      // Update with empty notes
+      await store.updateChannelNotes(mockChannel.channelId, '');
+
+      // Verify empty notes were saved
+      const updatedChannel = await store.getChannelById(mockChannel.channelId);
+      expect(updatedChannel.notes).toBe('');
+    });
+
+    it('should throw error when updating notes for non-existent channel', async () => {
+      await expect(
+        store.updateChannelNotes('non-existent-id', 'some notes')
+      ).rejects.toThrow('Channel not found');
+    });
+  });
 });
