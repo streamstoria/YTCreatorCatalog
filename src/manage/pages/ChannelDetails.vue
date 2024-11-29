@@ -78,11 +78,43 @@
         </div>
       </div>
 
-      <!-- Notes -->
+      <!-- Notes with Edit UI -->
       <div class="mb-6">
-        <h2 class="text-lg font-semibold mb-2">Notes</h2>
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="text-lg font-semibold">Notes</h2>
+          <button 
+            v-if="!isEditingNotes" 
+            @click="startEditingNotes" 
+            class="text-blue-600 hover:text-blue-800 text-sm"
+          >
+            Edit
+          </button>
+        </div>
         <div class="bg-gray-50 p-4 rounded">
-          {{ channel.notes || 'No notes added' }}
+          <div v-if="isEditingNotes">
+            <textarea
+              v-model="editedNotes"
+              class="w-full px-2 py-1 border rounded text-sm min-h-[100px] mb-2"
+              placeholder="Add notes about this channel..."
+            ></textarea>
+            <div class="flex justify-end gap-2">
+              <button
+                @click="cancelEditingNotes"
+                class="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                @click="saveNotes"
+                class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+          <div v-else class="whitespace-pre-wrap">
+            {{ channel.notes || 'No notes added' }}
+          </div>
         </div>
       </div>
 
@@ -134,7 +166,9 @@ const props = defineProps({
 
 const channel = ref(null);
 const newTag = ref('');
-const { getChannelById, addTagToChannel, removeTagFromChannel } = useStorage();
+const isEditingNotes = ref(false);
+const editedNotes = ref('');
+const { getChannelById, addTagToChannel, removeTagFromChannel, updateChannelNotes } = useStorage();
 
 // Format helpers
 const formatNumber = (num) => {
@@ -162,6 +196,24 @@ const removeTag = async (tagToRemove) => {
   await removeTagFromChannel(props.id, tagToRemove);
   // Update local state
   channel.value.tags = channel.value.tags.filter(tag => tag !== tagToRemove);
+};
+
+// Notes editing functions
+const startEditingNotes = () => {
+  editedNotes.value = channel.value.notes || '';
+  isEditingNotes.value = true;
+};
+
+const cancelEditingNotes = () => {
+  isEditingNotes.value = false;
+  editedNotes.value = '';
+};
+
+const saveNotes = async () => {
+  await updateChannelNotes(props.id, editedNotes.value);
+  // Update local state
+  channel.value.notes = editedNotes.value;
+  isEditingNotes.value = false;
 };
 
 // Load channel data
