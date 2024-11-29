@@ -50,7 +50,7 @@
                   :to="{ name: 'channel-details', params: { id: channel.channelId }}"
                   class="text-blue-600 hover:underline"
                 >
-                  {{ channel.title }}
+                  {{ channel.name }}
                 </router-link>
               </td>
               <td class="p-4">{{ formatNumber(channel.videoCount) }}</td>
