@@ -71,10 +71,9 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useStorage } from '../../store';
+import { useContentStore } from '../../store/contentStore';
 
 const props = defineProps({
   channelId: {
@@ -87,12 +86,11 @@ const props = defineProps({
 const tags = ref([]);
 const newTag = ref('');
 const notes = ref('');
-
-const { getChannelById, addTagToChannel, removeTagFromChannel, updateChannelNotes } = useStorage();
+const store = useContentStore();
 
 // Load existing data
 onMounted(async () => {
-  const channelData = await getChannelById(props.channelId);
+  const channelData = await store.getChannelById(props.channelId);
   if (channelData) {
     tags.value = channelData.tags || [];
     notes.value = channelData.notes || '';
@@ -102,14 +100,14 @@ onMounted(async () => {
 const addTag = async () => {
   const tag = newTag.value.trim();
   if (tag && !tags.value.includes(tag)) {
-    await addTagToChannel(props.channelId, tag);
+    await store.addTagToChannel(props.channelId, tag);
     tags.value.push(tag);
     newTag.value = '';
   }
 };
 
 const removeTag = async (tag) => {
-  await removeTagFromChannel(props.channelId, tag);
+  await store.removeTagFromChannel(props.channelId, tag);
   tags.value = tags.value.filter(t => t !== tag);
 };
 
@@ -124,7 +122,7 @@ const debounce = (fn, delay) => {
 
 // Debounced notes update
 const updateNotes = debounce(async () => {
-  await updateChannelNotes(props.channelId, notes.value);
+  await store.updateChannelNotes(props.channelId, notes.value);
 }, 500);
 
 const close = () => {
