@@ -31,6 +31,30 @@ export class ChannelsStore {
       throw error;
     }
   }
+
+  async getChannel(channelId) {
+    try {
+      const transaction = await dbConnection.getTransaction([STORES.CHANNELS]);
+      const store = transaction.objectStore(STORES.CHANNELS);
+
+      return new Promise((resolve, reject) => {
+        const request = store.get(channelId);
+        
+        request.onsuccess = () => {
+          if (request.result) {
+            resolve(request.result);
+          } else {
+            resolve(null); // Channel not found
+          }
+        };
+        
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error('Error getting channel:', error);
+      throw error;
+    }
+  }
 }
 
 export const channelsStore = new ChannelsStore();

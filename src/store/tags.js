@@ -52,6 +52,29 @@ export class TagsStore {
     }
   }
 
+  async getChannelTags(channelId) {
+    try {
+      const transaction = await dbConnection.getTransaction([STORES.TAGS]);
+      const store = transaction.objectStore(STORES.TAGS);
+      const channelIdIndex = store.index(INDEXES.TAGS.CHANNEL_ID);
+
+      return new Promise((resolve, reject) => {
+        const request = channelIdIndex.getAll(channelId);
+        
+        request.onsuccess = () => {
+          // Extract just the tag strings from the tag objects
+          const tags = request.result.map(tagObj => tagObj.tag);
+          resolve(tags);
+        };
+        
+        request.onerror = () => reject(request.error);
+      });
+    } catch (error) {
+      console.error('Error getting channel tags:', error);
+      throw error;
+    }
+  }
+
   async deleteTag(tagId) {
     const transaction = await dbConnection.getTransaction([STORES.TAGS], 'readwrite');
     const store = transaction.objectStore(STORES.TAGS);

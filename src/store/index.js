@@ -20,8 +20,32 @@ export const useStorage = () => {
     }
   };
 
+  const getChannelById = async (channelId) => {
+    try {
+      // Fetch channel data and tags in parallel
+      const [channel, tags] = await Promise.all([
+        channelsStore.getChannel(channelId),
+        tagsStore.getChannelTags(channelId)
+      ]);
+
+      if (!channel) {
+        return null;
+      }
+
+      // Combine channel data with tags
+      return {
+        ...channel,
+        tags
+      };
+    } catch (error) {
+      console.error('Error in getChannelById:', error);
+      throw error;
+    }
+  };
+
   return {
     saveChannelData,
+    getChannelById,
     // Other methods to be implemented...
   };
 };
