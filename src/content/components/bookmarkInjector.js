@@ -6,7 +6,7 @@ import { parseChannelInfo } from '../parsers/channelParser';
 import { parseVideoList } from '../parsers/videoParser';
 import { waitForElement } from '../utils/pageUtils';
 import { parseChannelHomePage } from '../parsers/channelHomeParser';
-import { useStorage } from '../../store';
+import { useContentStore } from '../../store/contentStore';
 
 export function injectBookmarkComponents() {
   const existingButton = u('#yt-bookmark-button');
@@ -40,20 +40,21 @@ export function injectBookmarkComponents() {
   actionsContainer.after(formWrapper);
 
   let vueApp = null;
-  function closeBookmarkForm(){
+
+  function closeBookmarkForm() {
     vueApp.unmount();
     vueApp = null;
     formWrapper.innerHTML = '';
   }
-  
+
   u('#yt-bookmark-button button').on('click', async () => {
     if (vueApp) {
       closeBookmarkForm();
       return;
     }
 
+    const store = useContentStore();
     const homePageData = parseChannelHomePage();
-    const { saveChannelData, getChannelById } = useStorage();
 
     // Ensure we have a valid channelId
     if (!homePageData.channelId) {
@@ -61,11 +62,10 @@ export function injectBookmarkComponents() {
       return;
     }
 
-    const channel = await getChannelById(homePageData.channelId)
-
-    if(!channel){
+    // Check if channel exists, if not save it
+    const channel = await store.getChannelById(homePageData.channelId);
+    if (!channel) {
       let channelInfo = await collectChannelInfo();
-      
       const videos = parseVideoList();
       const channelData = {
         ...channelInfo,
@@ -73,31 +73,23 @@ export function injectBookmarkComponents() {
         videos,
         lastUpdated: new Date().toISOString()
       };
-
-      await saveChannelData(channelData);
-
+      await store.saveChannelData(channelData);
       console.log('Saved Channel Data:', channelData);
-
     }
 
     // Create the bookmark form for tags and notes
     vueApp = createApp(BookmarkForm, {
-      channelId: homePageData.channelId, // Pass only the channelId
+      channelId: homePageData.channelId,
       onClose: () => {
         if (vueApp) {
           closeBookmarkForm();
         }
       }
     });
-    
+
     vueApp.mount('#yt-bookmark-form');
-      
   });
-
-  
 }
-
-
 
 async function collectChannelData() {
   return new Promise((resolve) => {
@@ -110,26 +102,25 @@ async function collectChannelData() {
   });
 }
 
-async function collectChannelInfo(){
-  let channelInfo = {}
+async function collectChannelInfo() {
+  let channelInfo = {};
   const moreButton = u('button.truncated-text-wiz__absolute-button');
-
   if (moreButton.length) {
     // Click the more button to open about popup
     moreButton.trigger('click');
-    
+
     try {
       // Wait for and collect channel data
       channelInfo = await collectChannelData();
-      
+
       // Close the about popup after collecting data
       const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
       if (closeButton.length) {
         closeButton.trigger('click');
       }
-    }catch(e){
-      console.error("Error collecting channel info ",e)
+    } catch (e) {
+      console.error("Error collecting channel info ", e);
     }
-  }  
+  }
   return channelInfo;
 }
