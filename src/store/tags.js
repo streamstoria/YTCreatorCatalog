@@ -9,42 +9,42 @@ export class TagsStore {
     }
 
     try {
+      // First get existing tags
+      const existingTags = await this.getChannelTags(channelId);
+      
+      // Start a new transaction for deletion and addition
       const transaction = await dbConnection.getTransaction([STORES.TAGS], 'readwrite');
       const store = transaction.objectStore(STORES.TAGS);
       const channelIdIndex = store.index(INDEXES.TAGS.CHANNEL_ID);
 
-      // Remove existing tags
-      const existingTagsRequest = channelIdIndex.getAll(channelId);
-      
       return new Promise((resolve, reject) => {
-        existingTagsRequest.onsuccess = async () => {
+        // Get all existing tag records for this channel
+        const getRequest = channelIdIndex.getAll(channelId);
+        
+        getRequest.onsuccess = () => {
           try {
-            // Delete existing tags
-            for (const tag of existingTagsRequest.result) {
-              await this.deleteTag(tag.id);
-            }
+            // Delete all existing tags in this transaction
+            getRequest.result.forEach(tag => {
+              store.delete(tag.id);
+            });
 
-            // Add new tags
-            const addPromises = tags.map(tag => 
-              new Promise((resolveAdd, rejectAdd) => {
-                const addRequest = store.add({
-                  tag,
-                  channelId
-                });
-                addRequest.onsuccess = resolveAdd;
-                addRequest.onerror = rejectAdd;
-              })
-            );
+            // Add all new tags in the same transaction
+            tags.forEach(tag => {
+              store.add({
+                tag,
+                channelId
+              });
+            });
 
-            await Promise.all(addPromises);
-            resolve();
+            // Handle transaction completion
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
           } catch (error) {
             reject(error);
           }
         };
 
-        existingTagsRequest.onerror = () => reject(existingTagsRequest.error);
-        transaction.onerror = () => reject(transaction.error);
+        getRequest.onerror = () => reject(getRequest.error);
       });
     } catch (error) {
       console.error('Error saving channel tags:', error);

@@ -24,9 +24,13 @@ describe('TagsStore', () => {
       const newTags = ['newTag1', 'newTag2'];
       await tagsStore.saveChannelTags(mockChannel.channelId, newTags);
       
+      // Get all tags after the update
       const allTags = await getAllFromStore(STORES.TAGS);
+      
+      // Verify the results
       expect(allTags).toHaveLength(newTags.length);
-      expect(allTags.map(t => t.tag)).toEqual(expect.arrayContaining(newTags));
+      expect(allTags.map(t => t.tag).sort())
+        .toEqual(newTags.sort());
     });
 
     it('should throw error when tags is not an array', async () => {
@@ -43,7 +47,7 @@ describe('TagsStore', () => {
       // Retrieve the tags
       const retrievedTags = await tagsStore.getChannelTags(mockChannel.channelId);
       
-      expect(retrievedTags).toEqual(expect.arrayContaining(mockTags));
+      expect(retrievedTags.sort()).toEqual(mockTags.sort());
     });
 
     it('should return empty array for channel with no tags', async () => {
