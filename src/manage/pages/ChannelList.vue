@@ -1,22 +1,54 @@
 <template>
   <div class="container mx-auto p-4">
     <h1 class="text-2xl font-bold mb-6">Bookmarked Channels</h1>
+    
+    <!-- Tags Section -->
+    <div class="mb-6">
+      <h2 class="text-lg font-semibold mb-2">Filter by Tags</h2>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button
+          v-for="tag in uniqueTags"
+          :key="tag"
+          @click="toggleTag(tag)"
+          :class="[
+            'px-3 py-1 rounded-full text-sm',
+            selectedTags.includes(tag)
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          ]"
+        >
+          {{ tag }}
+        </button>
+      </div>
+      <div v-if="selectedTags.length > 0" class="flex items-center gap-2 mb-4">
+        <span class="text-sm text-gray-600">
+          Showing channels with all tags:
+        </span>
+        <div class="flex flex-wrap gap-1">
+          <span
+            v-for="tag in selectedTags"
+            :key="tag"
+            class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+          >
+            {{ tag }}
+          </span>
+        </div>
+        <button
+          @click="clearTags"
+          class="text-sm text-red-600 hover:text-red-800"
+        >
+          Clear
+        </button>
+      </div>
+    </div>
 
-    <!-- Search and Sort Controls -->
-    <div class="mb-6 flex gap-4">
-      <input v-model="search" class="flex-1 border rounded p-2" placeholder="Search channels...">
-
-      <select v-model="sortBy" class="border rounded p-2">
-        <option value="title">Channel Name</option>
-        <option value="videoCount">Video Count</option>
-        <option value="viewCount">Total Views</option>
-        <option value="subscriberCount">Subscribers</option>
-      </select>
-
-      <select v-model="sortOrder" class="border rounded p-2">
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
+    <!-- Search Control -->
+    <div class="mb-6">
+      <input
+        v-model="search"
+        class="w-full border rounded p-2"
+        placeholder="Search channels..."
+      >
     </div>
 
     <!-- Table -->
@@ -24,32 +56,89 @@
       <table class="w-full text-left">
         <thead class="bg-gray-50 border-b">
           <tr>
-            <th class="p-4 font-medium text-gray-600">Channel Name</th>
-            <th class="p-4 font-medium text-gray-600">Videos</th>
-            <th class="p-4 font-medium text-gray-600">Views</th>
-            <th class="p-4 font-medium text-gray-600">Subscribers</th>
+            <th 
+              @click="updateSort('name')" 
+              class="p-4 font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+            >
+              <div class="flex items-center gap-1">
+                Channel Name
+                <span v-if="sortBy !== 'name'" class="text-gray-400">↕</span>
+                <span v-else>{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th class="p-4 font-medium text-gray-600">Tags</th>
+            <th 
+              @click="updateSort('videoCount')" 
+              class="p-4 font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+            >
+              <div class="flex items-center gap-1">
+                Videos
+                <span v-if="sortBy !== 'videoCount'" class="text-gray-400">↕</span>
+                <span v-else>{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th 
+              @click="updateSort('viewCount')" 
+              class="p-4 font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+            >
+              <div class="flex items-center gap-1">
+                Views
+                <span v-if="sortBy !== 'viewCount'" class="text-gray-400">↕</span>
+                <span v-else>{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
+            <th 
+              @click="updateSort('subscriberCount')" 
+              class="p-4 font-medium text-gray-600 cursor-pointer hover:bg-gray-100"
+            >
+              <div class="flex items-center gap-1">
+                Subscribers
+                <span v-if="sortBy !== 'subscriberCount'" class="text-gray-400">↕</span>
+                <span v-else>{{ sortOrder === 'asc' ? '↑' : '↓' }}</span>
+              </div>
+            </th>
             <th class="p-4 font-medium text-gray-600 w-20">Actions</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="channel in sortedAndFilteredChannels" :key="channel.channelId" class="border-b hover:bg-gray-50">
+          <tr
+            v-for="channel in sortedAndFilteredChannels"
+            :key="channel.channelId"
+            class="border-b hover:bg-gray-50"
+          >
             <td class="p-4">
-              <router-link :to="{ name: 'channel-details', params: { id: channel.channelId } }"
-                class="text-blue-600 hover:underline">
+              <router-link
+                :to="{ name: 'channel-details', params: { id: channel.channelId } }"
+                class="text-blue-600 hover:underline"
+              >
                 {{ channel.name }}
               </router-link>
+            </td>
+            <td class="p-4">
+              <div class="flex flex-wrap gap-1">
+                <span
+                  v-for="tag in channel.tags"
+                  :key="tag"
+                  class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs"
+                >
+                  {{ tag }}
+                </span>
+              </div>
             </td>
             <td class="p-4">{{ formatNumber(channel.videoCount) }}</td>
             <td class="p-4">{{ formatNumber(channel.viewCount) }}</td>
             <td class="p-4">{{ formatNumber(channel.subscriberCount) }}</td>
             <td class="p-4">
-              <button @click="handleRemoveChannel(channel.channelId)" class="text-red-500 hover:text-red-700">
+              <button
+                @click="handleRemoveChannel(channel.channelId)"
+                class="text-red-500 hover:text-red-700"
+              >
                 Remove
               </button>
             </td>
           </tr>
           <tr v-if="sortedAndFilteredChannels.length === 0">
-            <td colspan="5" class="p-4 text-center text-gray-500">
+            <td colspan="6" class="p-4 text-center text-gray-500">
               No channels found
             </td>
           </tr>
@@ -58,20 +147,45 @@
     </div>
   </div>
 </template>
-  
+
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useStorage } from '../../store';
 
-const { getChannelsMap,removeChannel } = useStorage();
+const { getChannelsMap, removeChannel } = useStorage();
 const channels = ref({});
 const search = ref('');
-const sortBy = ref('title');
-const sortOrder = ref('asc');
+const sortBy = ref('videoCount'); // Default sort field
+const sortOrder = ref('desc'); // Default to descending order
+const selectedTags = ref([]);
+
+// Computed property for all unique tags
+const uniqueTags = computed(() => {
+  const tagSet = new Set();
+  Object.values(channels.value).forEach(channel => {
+    channel.tags?.forEach(tag => tagSet.add(tag));
+  });
+  return Array.from(tagSet).sort();
+});
 
 // Load channels on mount
 const loadChannels = async () => {
   channels.value = await getChannelsMap();
+};
+
+// Toggle tag selection
+const toggleTag = (tag) => {
+  const index = selectedTags.value.indexOf(tag);
+  if (index === -1) {
+    selectedTags.value.push(tag);
+  } else {
+    selectedTags.value.splice(index, 1);
+  }
+};
+
+// Clear all selected tags
+const clearTags = () => {
+  selectedTags.value = [];
 };
 
 // Format large numbers
@@ -80,16 +194,23 @@ const formatNumber = (num) => {
   return new Intl.NumberFormat().format(num);
 };
 
+// Handle sort column click
+const updateSort = (field) => {
+  if (sortBy.value === field) {
+    // If clicking the same field, toggle sort order
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    // If clicking a new field, set it as sort field and default to descending
+    sortBy.value = field;
+    sortOrder.value = 'desc';
+  }
+};
 
 // Handle channel removal
 const handleRemoveChannel = async (channelId) => {
   if (confirm('Are you sure you want to remove this channel?')) {
     try {
-      console.log("removing channel ", channelId)
       await removeChannel(channelId);
-
-      console.log("reloading channels ...")
-      // Refresh the channels list after successful removal
       await loadChannels();
     } catch (error) {
       console.error('Failed to remove channel:', error);
@@ -98,27 +219,29 @@ const handleRemoveChannel = async (channelId) => {
   }
 };
 
-
 // Computed property for filtered and sorted channels
 const sortedAndFilteredChannels = computed(() => {
   let filtered = Object.values(channels.value).filter(channel => {
+    // Text search filter
     const searchLower = search.value.toLowerCase();
-    return (
-      channel.title?.toLowerCase().includes(searchLower) ||
-      channel.description?.toLowerCase().includes(searchLower) ||
-      channel.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-    );
+    const matchesSearch = 
+      channel.name?.toLowerCase().includes(searchLower) ||
+      channel.description?.toLowerCase().includes(searchLower);
+
+    // Tag filter - channel must have ALL selected tags
+    const matchesTags = selectedTags.value.length === 0 || 
+      selectedTags.value.every(tag => channel.tags?.includes(tag));
+
+    return matchesSearch && matchesTags;
   });
 
   return filtered.sort((a, b) => {
     let comparison = 0;
-
-    if (sortBy.value === 'title') {
-      comparison = a.title?.localeCompare(b.title);
+    if (sortBy.value === 'name') {
+      comparison = a.name?.localeCompare(b.name);
     } else {
       comparison = (a[sortBy.value] || 0) - (b[sortBy.value] || 0);
     }
-
     return sortOrder.value === 'asc' ? comparison : -comparison;
   });
 });
