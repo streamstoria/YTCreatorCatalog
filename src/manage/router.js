@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import ChannelList from './pages/ChannelList.vue';
 import ChannelDetails from './pages/ChannelDetails.vue';
+import ExportMarkdown from './pages/ExportMarkdown.vue';
 
 const routes = [
   {
@@ -13,6 +14,11 @@ const routes = [
     name: 'channel-details',
     component: ChannelDetails,
     props: true
+  },
+  {
+    path: '/export',
+    name: 'export-markdown',
+    component: ExportMarkdown
   }
 ];
 

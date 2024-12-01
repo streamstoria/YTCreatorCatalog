@@ -1,7 +1,17 @@
 <template>
   <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-6">Bookmarked Channels</h1>
-    
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">Bookmarked Channels</h1>
+      
+      <!-- Add Export Markdown Button -->
+      <button
+        @click="generateMarkdown"
+        class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+      >
+        Export Analysis Data
+      </button>
+    </div>
+
     <!-- Tags Section -->
     <div class="mb-6">
       <h2 class="text-lg font-semibold mb-2">Filter by Tags</h2>
@@ -151,8 +161,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useStorage } from '../../store';
+import { useRouter } from 'vue-router';
+
 
 const { getChannelsMap, removeChannel } = useStorage();
+
+const router = useRouter();
+
 const channels = ref({});
 const search = ref('');
 const sortBy = ref('videoCount'); // Default sort field
@@ -245,6 +260,56 @@ const sortedAndFilteredChannels = computed(() => {
     return sortOrder.value === 'asc' ? comparison : -comparison;
   });
 });
+
+const generateMarkdown = () => {
+  let markdown = `# YouTube Channel Analysis Data\n\n`;
+  
+  // Add summary section
+  markdown += `## Summary\n`;
+  markdown += `Total Channels: ${sortedAndFilteredChannels.value.length}\n`;
+  if (selectedTags.length > 0) {
+    markdown += `Applied Tags: ${selectedTags.join(', ')}\n`;
+  }
+  if (search.value) {
+    markdown += `Search Term: "${search.value}"\n`;
+  }
+  markdown += `Sort By: ${sortBy.value} (${sortOrder.value})\n\n`;
+  
+  // Add channel details
+  markdown += `## Channel Details\n\n`;
+  
+  sortedAndFilteredChannels.value.forEach((channel, index) => {
+    markdown += `### ${index + 1}. ${channel.name}\n`;
+    markdown += `- **Subscribers:** ${formatNumber(channel.subscriberCount)}\n`;
+    markdown += `- **Total Views:** ${formatNumber(channel.viewCount)}\n`;
+    markdown += `- **Video Count:** ${formatNumber(channel.videoCount)}\n`;
+    
+    if (channel.description) {
+      markdown += `\n**Channel Description:**\n${channel.description.trim()}\n`;
+    }
+    
+    if (channel.tags && channel.tags.length > 0) {
+      markdown += `\n**Tags:** ${channel.tags.join(', ')}\n`;
+    }
+    
+    if (channel.notes) {
+      markdown += `\n**Notes:**\n${channel.notes.trim()}\n`;
+    }
+    
+    if (channel.videos && channel.videos.length > 0) {
+      markdown += `\n**Top Videos:**\n`;
+      channel.videos.slice(0, 5).forEach(video => {
+        markdown += `- ${video.title} (${formatNumber(video.views)} views)\n`;
+      });
+    }
+    
+    markdown += `\n---\n\n`;
+  });
+  
+  // Store markdown in localStorage and navigate
+  localStorage.setItem('exportMarkdown', markdown);
+  router.push('/export');
+};
 
 onMounted(() => {
   loadChannels();
