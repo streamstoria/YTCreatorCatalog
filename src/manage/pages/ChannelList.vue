@@ -262,7 +262,7 @@ const sortedAndFilteredChannels = computed(() => {
 });
 
 const generateMarkdown = () => {
-  let markdown = `# YouTube Channel Analysis Data\n\n`;
+  let markdown = `# YouTube Channel Catalog\n\n`;
   
   // Add summary section
   markdown += `## Summary\n`;
@@ -273,10 +273,9 @@ const generateMarkdown = () => {
   if (search.value) {
     markdown += `Search Term: "${search.value}"\n`;
   }
-  markdown += `Sort By: ${sortBy.value} (${sortOrder.value})\n\n`;
   
   // Add channel details
-  markdown += `## Channel Details\n\n`;
+  markdown += `\n`;
   
   sortedAndFilteredChannels.value.forEach((channel, index) => {
     markdown += `### ${index + 1}. ${channel.name}\n`;
@@ -298,8 +297,8 @@ const generateMarkdown = () => {
     
     if (channel.videos && channel.videos.length > 0) {
       markdown += `\n**Top Videos:**\n`;
-      channel.videos.slice(0, 5).forEach(video => {
-        markdown += `- ${video.title} (${formatNumber(video.views)} views)\n`;
+      channel.videos.slice(0, 10).forEach(video => {
+        markdown += `- [${video.title}](${video.url}) (${formatNumber(video.views)} views)\n`;
       });
     }
     
