@@ -11,41 +11,13 @@
         >×</button>
       </div>
       
-      <!-- Tags section with horizontal layout -->
+      <!-- Tags section -->
       <div class="mb-3">
-        <div class="flex items-center gap-2">
-          <!-- Existing tags -->
-          <div class="flex flex-wrap gap-1">
-            <span 
-              v-for="tag in tags" 
-              :key="tag"
-              class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full flex items-center gap-1 text-2xl"
-            >
-              {{ tag }}
-              <button 
-                @click="removeTag(tag)" 
-                class="text-blue-600 hover:text-blue-800 ml-1 text-2xl"
-                aria-label="Remove tag"
-              >×</button>
-            </span>
-          </div>
-          
-          <!-- Tag input form -->
-          <form @submit.prevent="addTag" class="flex-1 flex gap-2">
-            <input
-              v-model="newTag"
-              type="text"
-              placeholder="Add tags..."
-              class="flex-1 px-2 py-1 border rounded text-2xl"
-            />
-            <button
-              type="submit"
-              class="py-1 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 text-2xl"
-            >
-              Add
-            </button>
-          </form>
-        </div>
+        <TagEditor
+          v-model="tags"
+          @add="addTag"
+          @remove="removeTag"
+        />
       </div>
       
       <!-- Notes textarea -->
@@ -63,7 +35,7 @@
       <div class="flex justify-end">
         <button
           @click="close"
-          class="px-4 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-2xl"
+          class="px-4 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-lg"
         >
           Close
         </button>
@@ -77,7 +49,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useContentStore } from '../../store/contentStore';
-
+import TagEditor from './TagEditor.vue';
 
 const props = defineProps({
   channelId: {
@@ -88,7 +60,6 @@ const props = defineProps({
 });
 
 const tags = ref([]);
-const newTag = ref('');
 const notes = ref('');
 const store = useContentStore();
 
@@ -101,13 +72,9 @@ onMounted(async () => {
   }
 });
 
-const addTag = async () => {
-  const tag = newTag.value.trim();
-  if (tag && !tags.value.includes(tag)) {
-    await store.addTagToChannel(props.channelId, tag);
-    tags.value.push(tag);
-    newTag.value = '';
-  }
+const addTag = async (tag) => {
+  await store.addTagToChannel(props.channelId, tag);
+  tags.value.push(tag);
 };
 
 const removeTag = async (tag) => {
