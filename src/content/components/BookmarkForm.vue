@@ -19,12 +19,12 @@
             <span 
               v-for="tag in tags" 
               :key="tag"
-              class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
+              class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full flex items-center gap-1 text-2xl"
             >
               {{ tag }}
               <button 
                 @click="removeTag(tag)" 
-                class="text-blue-600 hover:text-blue-800 ml-1"
+                class="text-blue-600 hover:text-blue-800 ml-1 text-2xl"
                 aria-label="Remove tag"
               >×</button>
             </span>
@@ -36,11 +36,11 @@
               v-model="newTag"
               type="text"
               placeholder="Add tags..."
-              class="flex-1 px-2 py-1 border rounded text-sm"
+              class="flex-1 px-2 py-1 border rounded text-2xl"
             />
             <button
               type="submit"
-              class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+              class="py-1 px-6 bg-blue-500 text-white rounded hover:bg-blue-600 text-2xl"
             >
               Add
             </button>
@@ -53,7 +53,7 @@
         <textarea
           v-model="notes"
           @input="updateNotes"
-          class="w-full px-2 py-1 border rounded text-sm"
+          class="w-full px-4 py-2 border rounded text-2xl"
           rows="2"
           placeholder="Add notes about this channel..."
         ></textarea>
@@ -63,7 +63,7 @@
       <div class="flex justify-end">
         <button
           @click="close"
-          class="px-4 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
+          class="px-4 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-2xl"
         >
           Close
         </button>
