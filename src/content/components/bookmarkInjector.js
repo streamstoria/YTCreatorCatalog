@@ -74,7 +74,6 @@ export function injectBookmarkComponents() {
         lastUpdated: new Date().toISOString()
       };
       await store.saveChannelData(channelData);
-      console.log('Saved Channel Data:', channelData);
     }
 
     // Create the bookmark form for tags and notes

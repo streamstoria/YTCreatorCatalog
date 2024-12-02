@@ -44,7 +44,6 @@ function initialize() {
   // Check for the actions container
   const checkForHeader = setInterval(() => {
     INIT_STATE.attemptCount++;
-    console.log(`Initialization attempt ${INIT_STATE.attemptCount}`);
 
     const actionsContainer = document.querySelector('yt-flexible-actions-view-model');
     
@@ -53,7 +52,6 @@ function initialize() {
       
       // Check if bookmark button already exists
       if (!document.getElementById('yt-bookmark-button')) {
-        console.log('Initializing bookmark components...');
         injectBookmarkComponents();
         INIT_STATE.isInitialized = true;
       }
@@ -95,5 +93,3 @@ setupMessageHandlers();
 if (shouldInitialize(window.location.href)) {
   initialize();
 }
-
-console.log('Content script initialized');
