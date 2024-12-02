@@ -6,7 +6,7 @@
 
     <div v-if="channel" class="border rounded p-6 bg-white">
       <!-- Header -->
-      <h1 class="text-2xl font-bold mb-6 text-slate-700">{{ channel.title }}</h1>
+      <h1 class="text-2xl font-bold mb-6 text-slate-700">{{ channel.name }}</h1>
 
       <!-- Channel Stats -->
       <div class="grid grid-cols-4 gap-4 mb-6">
@@ -37,44 +37,15 @@
       </div>
 
       <!-- Tags with Edit UI -->
+      <!-- Updated Tags section -->
       <div class="mb-6">
         <h2 class="text-lg font-semibold mb-2 text-slate-600">Tags</h2>
         <div class="bg-gray-50 p-4 rounded">
-          <div class="mb-3">
-            <div class="flex items-center gap-2">
-              <!-- Existing tags -->
-              <div class="flex flex-wrap gap-1">
-                <span 
-                  v-for="tag in channel.tags" 
-                  :key="tag"
-                  class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center gap-1 text-lg"
-                >
-                  {{ tag }}
-                  <button 
-                    @click="removeTag(tag)" 
-                    class="text-blue-600 hover:text-blue-800 ml-1"
-                    aria-label="Remove tag"
-                  >×</button>
-                </span>
-              </div>
-              
-              <!-- Tag input form -->
-              <form @submit.prevent="addTag" class="flex-1 flex gap-2">
-                <input
-                  v-model="newTag"
-                  type="text"
-                  placeholder="Add tags..."
-                  class="flex-1 px-2 py-1 border rounded text-lg"
-                />
-                <button
-                  type="submit"
-                  class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-lg"
-                >
-                  Add
-                </button>
-              </form>
-            </div>
-          </div>
+          <TagEditor
+            v-model="channel.tags"
+            @add="addTag"
+            @remove="removeTag"
+          />
         </div>
       </div>
 
@@ -156,6 +127,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useStorage } from '../../store';
+import TagEditor from '../../components/common/TagEditor.vue';
 
 const props = defineProps({
   id: {
@@ -165,12 +137,9 @@ const props = defineProps({
 });
 
 const channel = ref(null);
-const newTag = ref('');
-const isEditingNotes = ref(false);
-const editedNotes = ref('');
 const { getChannelById, addTagToChannel, removeTagFromChannel, updateChannelNotes } = useStorage();
 
-// Format helpers
+// Previous helper functions remain the same
 const formatNumber = (num) => {
   if (!num) return '0';
   return new Intl.NumberFormat().format(num);
@@ -181,24 +150,22 @@ const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString();
 };
 
-const addTag = async () => {
-  const tag = newTag.value.trim();
-  if (tag && !channel.value.tags?.includes(tag)) {
-    await addTagToChannel(props.id, tag);
-    // Update local state
-    if (!channel.value.tags) channel.value.tags = [];
-    channel.value.tags.push(tag);
-    newTag.value = '';
-  }
+// Updated tag handling functions
+const addTag = async (tag) => {
+  await addTagToChannel(props.id, tag);
+  if (!channel.value.tags) channel.value.tags = [];
+  channel.value.tags.push(tag);
 };
 
-const removeTag = async (tagToRemove) => {
-  await removeTagFromChannel(props.id, tagToRemove);
-  // Update local state
-  channel.value.tags = channel.value.tags.filter(tag => tag !== tagToRemove);
+const removeTag = async (tag) => {
+  await removeTagFromChannel(props.id, tag);
+  channel.value.tags = channel.value.tags.filter(t => t !== tag);
 };
 
-// Notes editing functions
+// Notes editing functions remain the same
+const isEditingNotes = ref(false);
+const editedNotes = ref('');
+
 const startEditingNotes = () => {
   editedNotes.value = channel.value.notes || '';
   isEditingNotes.value = true;
@@ -211,7 +178,6 @@ const cancelEditingNotes = () => {
 
 const saveNotes = async () => {
   await updateChannelNotes(props.id, editedNotes.value);
-  // Update local state
   channel.value.notes = editedNotes.value;
   isEditingNotes.value = false;
 };

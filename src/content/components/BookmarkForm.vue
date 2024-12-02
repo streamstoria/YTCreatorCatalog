@@ -49,7 +49,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useContentStore } from '../../store/contentStore';
-import TagEditor from './TagEditor.vue';
+import TagEditor from '../../components/common/TagEditor.vue';
 
 const props = defineProps({
   channelId: {
