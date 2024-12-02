@@ -71,9 +71,13 @@
     </div>
   </div>
 </template>
+<style scoped>
+@import '../../assets/style.css';
+</style>
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useContentStore } from '../../store/contentStore';
+
 
 const props = defineProps({
   channelId: {

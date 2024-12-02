@@ -1,7 +1,6 @@
 // src/content/index.js
 import { injectBookmarkComponents } from './components/bookmarkInjector';
 import { setupMessageHandlers } from './messageHandler';
-import '../assets/style.css';
 import { isYouTubeChannelPage } from './utils/pageUtils';
 
 // Global initialization state
