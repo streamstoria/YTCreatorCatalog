@@ -1,14 +1,14 @@
 <template>
   <div class="container mx-auto p-4">
     <div class="flex justify-between items-center mb-6">
-      <h1 class="text-2xl font-bold">Bookmarked Channels</h1>
+      <h1 class="text-xl font-bold">Bookmarked Channels</h1>
       
       <!-- Add Export Markdown Button -->
       <button
         @click="generateMarkdown"
         class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
       >
-        Export Analysis Data
+        Export to Markdown
       </button>
     </div>
 
@@ -21,7 +21,7 @@
           :key="tag"
           @click="toggleTag(tag)"
           :class="[
-            'px-3 py-1 rounded-full text-sm',
+            'px-3 py-1 rounded-full text-lg',
             selectedTags.includes(tag)
               ? 'bg-blue-500 text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -31,21 +31,21 @@
         </button>
       </div>
       <div v-if="selectedTags.length > 0" class="flex items-center gap-2 mb-4">
-        <span class="text-sm text-gray-600">
+        <span class="text-lg text-gray-600">
           Showing channels with all tags:
         </span>
         <div class="flex flex-wrap gap-1">
           <span
             v-for="tag in selectedTags"
             :key="tag"
-            class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm"
+            class="bg-blue-100 text-blue-800 px-5 py-1 rounded-full text-lg"
           >
             {{ tag }}
           </span>
         </div>
         <button
           @click="clearTags"
-          class="text-sm text-red-600 hover:text-red-800"
+          class="text-lg text-red-600 hover:text-red-800"
         >
           Clear
         </button>
@@ -119,7 +119,7 @@
             <td class="p-4">
               <router-link
                 :to="{ name: 'channel-details', params: { id: channel.channelId } }"
-                class="text-blue-600 hover:underline"
+                class="text-blue-600 hover:underline text-xl"
               >
                 {{ channel.name }}
               </router-link>
@@ -129,7 +129,7 @@
                 <span
                   v-for="tag in channel.tags"
                   :key="tag"
-                  class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs"
+                  class="bg-gray-100 text-gray-700 px-5 py-1 rounded-full text-lg"
                 >
                   {{ tag }}
                 </span>
@@ -141,7 +141,7 @@
             <td class="p-4">
               <button
                 @click="handleRemoveChannel(channel.channelId)"
-                class="text-red-500 hover:text-red-700"
+                class="text-red-500 hover:text-red-700 text-sm"
               >
                 Remove
               </button>
