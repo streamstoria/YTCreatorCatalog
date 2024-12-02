@@ -6,39 +6,39 @@
 
     <div v-if="channel" class="border rounded p-6 bg-white">
       <!-- Header -->
-      <h1 class="text-2xl font-bold mb-6">{{ channel.title }}</h1>
+      <h1 class="text-2xl font-bold mb-6 text-slate-700">{{ channel.title }}</h1>
 
       <!-- Channel Stats -->
       <div class="grid grid-cols-4 gap-4 mb-6">
         <div class="p-4 bg-gray-50 rounded">
           <div class="text-sm text-gray-600">Subscribers</div>
-          <div class="text-lg font-semibold">{{ formatNumber(channel.subscriberCount) }}</div>
+          <div class="text-lg font-semibold ">{{ formatNumber(channel.subscriberCount) }}</div>
         </div>
         <div class="p-4 bg-gray-50 rounded">
           <div class="text-sm text-gray-600">Total Views</div>
-          <div class="text-lg font-semibold">{{ formatNumber(channel.viewCount) }}</div>
+          <div class="text-lg font-semibold ">{{ formatNumber(channel.viewCount) }}</div>
         </div>
         <div class="p-4 bg-gray-50 rounded">
           <div class="text-sm text-gray-600">Videos</div>
-          <div class="text-lg font-semibold">{{ formatNumber(channel.videoCount) }}</div>
+          <div class="text-lg font-semibold ">{{ formatNumber(channel.videoCount) }}</div>
         </div>
         <div class="p-4 bg-gray-50 rounded">
           <div class="text-sm text-gray-600">Joined</div>
-          <div class="text-lg font-semibold">{{ channel.joinDate }}</div>
+          <div class="text-lg font-semibold ">{{ channel.joinDate }}</div>
         </div>
       </div>
 
       <!-- Channel Description -->
       <div class="mb-6">
-        <h2 class="text-lg font-semibold mb-2">About</h2>
-        <div class="bg-gray-50 p-4 rounded whitespace-pre-wrap">
+        <h2 class="text-lg font-semibold mb-2 text-slate-600">About</h2>
+        <div class="bg-gray-50 p-4 rounded whitespace-pre-wrap text-lg">
           {{ channel.description || 'No description available' }}
         </div>
       </div>
 
       <!-- Tags with Edit UI -->
       <div class="mb-6">
-        <h2 class="text-lg font-semibold mb-2">Tags</h2>
+        <h2 class="text-lg font-semibold mb-2 text-slate-600">Tags</h2>
         <div class="bg-gray-50 p-4 rounded">
           <div class="mb-3">
             <div class="flex items-center gap-2">
@@ -47,7 +47,7 @@
                 <span 
                   v-for="tag in channel.tags" 
                   :key="tag"
-                  class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
+                  class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full flex items-center gap-1 text-lg"
                 >
                   {{ tag }}
                   <button 
@@ -64,11 +64,11 @@
                   v-model="newTag"
                   type="text"
                   placeholder="Add tags..."
-                  class="flex-1 px-2 py-1 border rounded text-sm"
+                  class="flex-1 px-2 py-1 border rounded text-lg"
                 />
                 <button
                   type="submit"
-                  class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                  class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-lg"
                 >
                   Add
                 </button>
@@ -81,11 +81,11 @@
       <!-- Notes with Edit UI -->
       <div class="mb-6">
         <div class="flex justify-between items-center mb-2">
-          <h2 class="text-lg font-semibold">Notes</h2>
+          <h2 class="text-lg font-semibold text-slate-600">Notes</h2>
           <button 
             v-if="!isEditingNotes" 
             @click="startEditingNotes" 
-            class="text-blue-600 hover:text-blue-800 text-sm"
+            class="text-blue-600 hover:text-blue-800 text-lg"
           >
             Edit
           </button>
@@ -94,25 +94,25 @@
           <div v-if="isEditingNotes">
             <textarea
               v-model="editedNotes"
-              class="w-full px-2 py-1 border rounded text-sm min-h-[100px] mb-2"
+              class="w-full px-2 py-1 border rounded text-lg min-h-[100px] mb-2"
               placeholder="Add notes about this channel..."
             ></textarea>
             <div class="flex justify-end gap-2">
               <button
                 @click="cancelEditingNotes"
-                class="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-sm"
+                class="px-3 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 text-lg"
               >
                 Cancel
               </button>
               <button
                 @click="saveNotes"
-                class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-lg"
               >
                 Save
               </button>
             </div>
           </div>
-          <div v-else class="whitespace-pre-wrap">
+          <div v-else class="whitespace-pre-wrap text-lg">
             {{ channel.notes || 'No notes added' }}
           </div>
         </div>
@@ -120,21 +120,21 @@
 
       <!-- Popular Videos -->
       <div class="mb-6">
-        <h2 class="text-lg font-semibold mb-2">Popular Videos</h2>
+        <h2 class="text-lg font-semibold mb-2 text-slate-600">Popular Videos</h2>
         <div class="space-y-2">
           <div 
-            v-for="video in channel.videos?.slice(0, 5)" 
+            v-for="video in channel.videos?.slice(0, 10)" 
             :key="video.url"
             class="flex justify-between items-center p-2 hover:bg-gray-50 rounded"
           >
             <a 
               :href="video.url" 
               target="_blank"
-              class="text-blue-600 hover:underline flex-1"
+              class="text-blue-600 hover:underline flex-1 text-lg"
             >
               {{ video.title }}
             </a>
-            <span class="text-gray-600 text-sm">
+            <span class="text-gray-600 text-lg">
               {{ formatNumber(video.views) }} views
             </span>
           </div>
