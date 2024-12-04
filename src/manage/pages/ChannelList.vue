@@ -278,7 +278,9 @@ const generateMarkdown = () => {
   markdown += `\n`;
   
   sortedAndFilteredChannels.value.forEach((channel, index) => {
+    // Add channel name with link
     markdown += `### ${index + 1}. ${channel.name}\n`;
+    markdown += `- **Channel URL:** https://www.youtube.com/@${channel.channelId}\n`;
     markdown += `- **Subscribers:** ${formatNumber(channel.subscriberCount)}\n`;
     markdown += `- **Total Views:** ${formatNumber(channel.viewCount)}\n`;
     markdown += `- **Video Count:** ${formatNumber(channel.videoCount)}\n`;
