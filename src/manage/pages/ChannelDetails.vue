@@ -6,7 +6,16 @@
 
     <div v-if="channel" class="border rounded p-6 bg-white">
       <!-- Header -->
-      <h1 class="text-2xl font-bold mb-6 text-slate-700">{{ channel.name }}</h1>
+      <div class="mb-6 flex space-x-3 items-baseline">
+        <h1 class="text-2xl font-bold text-slate-700">{{ channel.name }}</h1>
+        <a 
+          :href="`https://youtube.com/@${channel.channelId}`" 
+          target="_blank"
+          class="text-blue-400 hover:underline text-xs"
+        >
+          @{{ channel.channelId }}
+        </a>
+      </div>
 
       <!-- Channel Stats -->
       <div class="grid grid-cols-4 gap-4 mb-6">

@@ -96,7 +96,7 @@ async function collectChannelData() {
       setTimeout(() => {
         const channelInfo = parseChannelInfo();
         resolve(channelInfo);
-      }, 500);
+      }, 300);
     }, 20);
   });
 }
@@ -113,7 +113,7 @@ async function collectChannelInfo() {
       channelInfo = await collectChannelData();
 
       // Close the about popup after collecting data
-      const closeButton = u('#visibility-button .yt-spec-button-shape-next--icon-only-default');
+      const closeButton = u('tp-yt-paper-dialog ytd-engagement-panel-section-list-renderer #visibility-button .yt-spec-button-shape-next--icon-only-default');
       if (closeButton.length) {
         closeButton.trigger('click');
       }
