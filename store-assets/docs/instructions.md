@@ -23,3 +23,7 @@
 - Use tags to group similar channels
 - Add notes to remember why you bookmarked a channel
 - Regular bookmarking helps track channel growth over time
+
+## Detailed Documentation
+For comprehensive documentation, tutorials, use cases, and FAQ, visit:
+https://www.streamstoria.com/tools/yt-creator-catalog/

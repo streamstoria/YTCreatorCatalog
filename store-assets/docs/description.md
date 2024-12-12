@@ -18,3 +18,7 @@ Perfect for:
 - Anyone wanting to catalog YouTube channels systematically
 
 No signup, no cloud storage, no tracking - just a simple, effective way to organize YouTube channels.
+
+## Detailed Documentation
+For comprehensive documentation, use cases, and FAQ, visit:
+https://www.streamstoria.com/tools/yt-creator-catalog/
