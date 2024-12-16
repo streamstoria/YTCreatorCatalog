@@ -10,8 +10,6 @@
         "128": "src/assets/icons/icon128.png"
     },
     "permissions": [
-        "activeTab",
-        "scripting",
         "storage"
     ],
     "host_permissions": [
@@ -41,7 +39,7 @@
       "resources": ["src/manage/*"],
       "matches": ["<all_urls>"]
     }
-  ],
+    ],
     "background": {
         "service_worker": "src/background/index.js",
         "type": "module"
