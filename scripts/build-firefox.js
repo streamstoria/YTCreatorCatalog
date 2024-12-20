@@ -33,32 +33,11 @@ async function buildFirefox() {
   // Copy all files from Chrome build
   await copyDir(srcDir, destDir);
 
-  // Read the original manifest
-  const manifestPath = path.join(projectRoot, 'src', 'manifest.json');
-  const manifest = JSON.parse(await fs.promises.readFile(manifestPath, 'utf8'));
-
-  // Create Firefox manifest
-  const firefoxManifest = {
-    ...manifest,
-    manifest_version: 2,
-    browser_specific_settings: {
-      gecko: {
-        id: "ytcreatorcatalog@yourdomain.com",
-        strict_min_version: "57.0"
-      }
-    },
-    browser_action: manifest.action,
-    background: {
-      scripts: ["src/background/index.js"],
-      type: "module"
-    }
-  };
-  delete firefoxManifest.action;
-
-  // Write Firefox manifest
-  await fs.promises.writeFile(
-    path.join(destDir, 'manifest.json'),
-    JSON.stringify(firefoxManifest, null, 2)
+  // Copy the Firefox manifest
+  const firefoxManifestPath = path.join(projectRoot, 'manifest.firefox.json');
+  await fs.promises.copyFile(
+    firefoxManifestPath,
+    path.join(destDir, 'manifest.json')
   );
 
   console.log('Firefox build completed successfully!');
