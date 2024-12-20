@@ -31,7 +31,7 @@ All dependencies are listed in `package.json` and will be installed automaticall
 
 1. **Clone the Repository**
    ```bash
-   git clone [repository-url]
+   git clone https://github.com/streamstoria/YTCreatorCatalog.git
    cd YTCreatorCatalog
    ```
 
