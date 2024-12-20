@@ -5,10 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm run build:chrome && pnpm run build:firefox && pnpm run build:edge",
+    "build:chrome": "cross-env BUILD_TARGET=chrome vite build",
+    "build:edge": "cross-env BUILD_TARGET=edge vite build",
+    "build:firefox": "pnpm run build:chrome && node scripts/build-firefox.js",
     "preview": "vite preview",
     "test": "vitest",
-    "coverage": "vitest run --coverage"
+    "coverage": "vitest run --coverage",
+    "package": "node scripts/package.js"
   },
   "dependencies": {
     "umbrellajs": "^3.3.3",
@@ -19,11 +23,13 @@
     "@crxjs/vite-plugin": "^2.0.0-beta.19",
     "@vitejs/plugin-vue": "^4.5.0",
     "autoprefixer": "^10.4.16",
+    "cross-env": "^7.0.3",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.3.5",
     "vite": "^5.0.0",
     "vitest": "^1.0.4",
     "fake-indexeddb": "^5.0.1",
-    "jsdom": "^23.0.1"
+    "jsdom": "^23.0.1",
+    "zip-lib": "^0.7.3"
   }
 }
