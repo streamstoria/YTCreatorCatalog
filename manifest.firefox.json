@@ -10,9 +10,6 @@
     "128": "src/assets/icons/icon128.png"
   },
   "permissions": [
-    "activeTab",
-    "scripting",
-    "storage",
     "https://www.youtube.com/*"
   ],
   "browser_specific_settings": {
